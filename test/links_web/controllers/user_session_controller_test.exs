@@ -8,12 +8,12 @@ defmodule LinksWeb.UserSessionControllerTest do
     %{unconfirmed_user: unconfirmed_user_fixture(), user: user_fixture()}
   end
 
-  describe "POST /users/log-in - email and password" do
+  describe "POST /users/login - email and password" do
     test "logs the user in", %{conn: conn, user: user} do
       user = set_password(user)
 
       conn =
-        post(conn, ~p"/users/log-in", %{
+        post(conn, ~p"/users/login", %{
           "user" => %{"email" => user.email, "password" => valid_user_password()}
         })
 
@@ -32,7 +32,7 @@ defmodule LinksWeb.UserSessionControllerTest do
       user = set_password(user)
 
       conn =
-        post(conn, ~p"/users/log-in", %{
+        post(conn, ~p"/users/login", %{
           "user" => %{
             "email" => user.email,
             "password" => valid_user_password(),
@@ -50,7 +50,7 @@ defmodule LinksWeb.UserSessionControllerTest do
       conn =
         conn
         |> init_test_session(user_return_to: "/foo/bar")
-        |> post(~p"/users/log-in", %{
+        |> post(~p"/users/login", %{
           "user" => %{
             "email" => user.email,
             "password" => valid_user_password()
@@ -63,21 +63,21 @@ defmodule LinksWeb.UserSessionControllerTest do
 
     test "redirects to login page with invalid credentials", %{conn: conn, user: user} do
       conn =
-        post(conn, ~p"/users/log-in?mode=password", %{
+        post(conn, ~p"/users/login?mode=password", %{
           "user" => %{"email" => user.email, "password" => "invalid_password"}
         })
 
       assert Phoenix.Flash.get(conn.assigns.flash, :error) == "Invalid email or password"
-      assert redirected_to(conn) == ~p"/users/log-in"
+      assert redirected_to(conn) == ~p"/users/login"
     end
   end
 
-  describe "POST /users/log-in - magic link" do
+  describe "POST /users/login - magic link" do
     test "logs the user in", %{conn: conn, user: user} do
       {token, _hashed_token} = generate_user_magic_link_token(user)
 
       conn =
-        post(conn, ~p"/users/log-in", %{
+        post(conn, ~p"/users/login", %{
           "user" => %{"token" => token}
         })
 
@@ -97,7 +97,7 @@ defmodule LinksWeb.UserSessionControllerTest do
       refute user.confirmed_at
 
       conn =
-        post(conn, ~p"/users/log-in", %{
+        post(conn, ~p"/users/login", %{
           "user" => %{"token" => token},
           "_action" => "confirmed"
         })
@@ -118,14 +118,14 @@ defmodule LinksWeb.UserSessionControllerTest do
 
     test "redirects to login page when magic link is invalid", %{conn: conn} do
       conn =
-        post(conn, ~p"/users/log-in", %{
+        post(conn, ~p"/users/login", %{
           "user" => %{"token" => "invalid"}
         })
 
       assert Phoenix.Flash.get(conn.assigns.flash, :error) ==
                "The link is invalid or it has expired."
 
-      assert redirected_to(conn) == ~p"/users/log-in"
+      assert redirected_to(conn) == ~p"/users/login"
     end
   end
 end

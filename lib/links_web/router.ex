@@ -27,11 +27,6 @@ defmodule LinksWeb.Router do
     end
   end
 
-  # Other scopes may use custom stacks.
-  # scope "/api", LinksWeb do
-  #   pipe_through :api
-  # end
-
   # Enable Swoosh mailbox preview in development
   if Application.compile_env(:links, :dev_routes) do
 
@@ -42,8 +37,6 @@ defmodule LinksWeb.Router do
     end
   end
 
-  ## Authentication routes
-
   scope "/", LinksWeb do
     pipe_through [:browser, :require_authenticated_user]
 
@@ -52,8 +45,6 @@ defmodule LinksWeb.Router do
       live "/users/settings", UserLive.Settings, :edit
       live "/users/settings/confirm-email/:token", UserLive.Settings, :confirm_email
     end
-
-
   end
 
   scope "/", LinksWeb do
@@ -61,11 +52,11 @@ defmodule LinksWeb.Router do
 
     live_session :current_user,
       on_mount: [{LinksWeb.UserAuth, :mount_current_scope}] do
-      live "/users/log-in", UserLive.Login, :new
+      live "/users/login", UserLive.Login, :new
     end
 
-    post "/users/log-in", UserSessionController, :create
-    get "/users/log-in/:token", UserSessionController, :magic_link_login
+    post "/users/login", UserSessionController, :create
+    get "/users/login/:token", UserSessionController, :magic_link_login
     delete "/users/log-out", UserSessionController, :delete
   end
 end

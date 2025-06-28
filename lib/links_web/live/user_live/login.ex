@@ -14,7 +14,7 @@ defmodule LinksWeb.UserLive.Login do
           :let={f}
           for={@form}
           id="login_form"
-          action={~p"/users/log-in"}
+          action={~p"/users/login"}
           phx-submit="submit_magic"
         >
         <div class="form-control">
@@ -68,7 +68,7 @@ defmodule LinksWeb.UserLive.Login do
     if user do
       Accounts.deliver_login_instructions(
         user,
-        &url(~p"/users/log-in/#{&1}")
+        &url(~p"/users/login/#{&1}")
       )
     end
 
@@ -77,7 +77,7 @@ defmodule LinksWeb.UserLive.Login do
     {:noreply,
      socket
      |> put_flash(:info, info)
-     |> push_navigate(to: ~p"/users/log-in")}
+     |> push_navigate(to: ~p"/users/login")}
   end
 
   defp local_mail_adapter? do

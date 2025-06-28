@@ -44,7 +44,7 @@ defmodule LinksWeb.UserLive.RegistrationTest do
 
       {:ok, _lv, html} =
         render_submit(form)
-        |> follow_redirect(conn, ~p"/users/log-in")
+        |> follow_redirect(conn, ~p"/users/login")
 
       assert html =~
                ~r/An email was sent to .*, please access it to confirm your account/
@@ -74,7 +74,7 @@ defmodule LinksWeb.UserLive.RegistrationTest do
         lv
         |> element("main a", "Login")
         |> render_click()
-        |> follow_redirect(conn, ~p"/users/log-in")
+        |> follow_redirect(conn, ~p"/users/login")
 
       assert login_html =~ "Login"
     end
