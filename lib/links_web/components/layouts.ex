@@ -33,9 +33,9 @@ defmodule LinksWeb.Layouts do
     ~H"""
     <div class="max-w-4xl mx-auto px-4 py-6">
       <header class="mb-6 flex justify-between items-center">
-        <a href="/">
+        <.link navigate={~p"/"}>
           <h1 class="text-3xl font-bold text-gray-900 mb-2">Links</h1>
-        </a>
+        </.link>
         <nav class="flex space-x-6 items-center">
           <%= if @current_scope do %>
             <.link href={~p"/log-out"} method="delete" class="text-gray-600 hover:text-black transition-colors">Log out</.link>
