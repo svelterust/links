@@ -31,37 +31,28 @@ defmodule LinksWeb.Layouts do
 
   def app(assigns) do
     ~H"""
-    <header class="navbar px-4 sm:px-6 lg:px-8">
-      <div class="flex-1">
-        <a href="/" class="flex-1 flex w-fit items-center gap-2">
-          <img src={~p"/images/logo.svg"} width="36" />
-          <span class="text-sm font-semibold">v{Application.spec(:phoenix, :vsn)}</span>
-        </a>
-      </div>
-      <div class="flex-none">
-        <ul class="flex flex-column px-1 space-x-4 items-center">
-          <li>
-            <a href="https://phoenixframework.org/" class="btn btn-ghost">Website</a>
-          </li>
-          <li>
-            <a href="https://github.com/phoenixframework/phoenix" class="btn btn-ghost">GitHub</a>
-          </li>
-          <li>
-            <.theme_toggle />
-          </li>
-          <li>
-            <a href="https://hexdocs.pm/phoenix/overview.html" class="btn btn-primary">
-              Get Started <span aria-hidden="true">&rarr;</span>
-            </a>
-          </li>
-        </ul>
+    <header class="bg-orange-500 text-white px-4 py-3">
+      <div class="max-w-6xl mx-auto flex items-center justify-between">
+        <div class="flex items-center space-x-4">
+          <a href="/" class="text-xl font-bold hover:text-orange-100 transition-colors">
+            Links
+          </a>
+          <nav class="hidden md:flex space-x-4">
+            <a href="/" class="hover:text-orange-100 transition-colors">Home</a>
+            <a href="/new" class="hover:text-orange-100 transition-colors">Submit</a>
+            <a href="/recent" class="hover:text-orange-100 transition-colors">Recent</a>
+            <a href="/comments" class="hover:text-orange-100 transition-colors">Comments</a>
+          </nav>
+        </div>
+        <div class="flex items-center space-x-4">
+          <a href="/login" class="hover:text-orange-100 transition-colors">Login</a>
+          <a href="/signup" class="bg-orange-600 hover:bg-orange-700 px-3 py-1 rounded transition-colors">Sign Up</a>
+        </div>
       </div>
     </header>
 
-    <main class="px-4 py-20 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-2xl space-y-4">
-        {render_slot(@inner_block)}
-      </div>
+    <main class="min-h-screen bg-gray-50">
+      {render_slot(@inner_block)}
     </main>
 
     <.flash_group flash={@flash} />

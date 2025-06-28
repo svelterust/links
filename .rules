@@ -40,3 +40,7 @@
 - SQLite database for persistence
 - Asset pipeline with Tailwind CSS and ESBuild
 - Configured for both development and production environments
+
+## Rules
+- When you want to test the project is running, use `mix test` or `mix compile`
+- Do not use `mix phx.server`, because this gets you stuck waiting for the server

@@ -17,7 +17,8 @@ defmodule LinksWeb.Router do
   scope "/", LinksWeb do
     pipe_through :browser
 
-    get "/", PageController, :home
+    live "/", HomeLive
+    live "/posts/:id/comments", CommentsLive
   end
 
   # Other scopes may use custom stacks.
