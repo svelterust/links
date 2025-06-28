@@ -27,6 +27,10 @@ defmodule LinksWeb.CoreComponents do
 
   """
   use Phoenix.Component
+  use Phoenix.VerifiedRoutes,
+    endpoint: LinksWeb.Endpoint,
+    router: LinksWeb.Router,
+    statics: LinksWeb.static_paths()
 
   alias Phoenix.LiveView.JS
 
@@ -461,5 +465,92 @@ defmodule LinksWeb.CoreComponents do
   """
   def translate_errors(errors, field) when is_list(errors) do
     for {^field, {msg, opts}} <- errors, do: translate_error({msg, opts})
+  end
+
+  @doc """
+  Renders a post card component.
+
+  ## Examples
+
+      <.post_card post={@post} />
+      <.post_card post={@post} show_comments_link={false} />
+  """
+  attr :post, :map, required: true
+  attr :show_comments_link, :boolean, default: true
+
+  def post_card(assigns) do
+    ~H"""
+    <article class="flex items-start space-x-4 p-4 bg-white rounded-lg border border-gray-200 hover:border-gray-300 transition-colors">
+      <div class="flex flex-col items-center space-y-1 min-w-0">
+        <button class="text-gray-400 hover:text-orange-500 transition-colors">
+          <.icon name="hero-chevron-up" class="w-4 h-4" />
+        </button>
+        <span class="text-sm font-medium text-gray-900">{@post.points}</span>
+        <button class="text-gray-400 hover:text-orange-500 transition-colors">
+          <.icon name="hero-chevron-down" class="w-4 h-4" />
+        </button>
+      </div>
+
+      <div class="flex-1 min-w-0">
+        <div class="flex items-start justify-between">
+          <div class="flex-1 min-w-0">
+            <h3 class="text-lg font-medium text-gray-900 hover:text-blue-600 transition-colors">
+              <a href={@post.url} target="_blank" rel="noopener noreferrer" class="block">
+                {@post.title}
+                <span class="text-sm text-gray-500 ml-2">({extract_domain(@post.url)})</span>
+              </a>
+            </h3>
+
+            <div class="mt-2 flex items-center space-x-4 text-sm text-gray-500">
+              <span>by {@post.author}</span>
+              <span>{format_time_ago(@post.inserted_at)}</span>
+              <.link
+                :if={@show_comments_link}
+                navigate={~p"/posts/#{@post.id}/comments"}
+                class="hover:text-gray-700 transition-colors"
+              >
+                <span>{@post.comment_count} comments</span>
+              </.link>
+              <div class="flex space-x-2">
+                <%= for tag <- @post.tags do %>
+                  <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    {tag}
+                  </span>
+                <% end %>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+    """
+  end
+
+  # Helper functions for post component
+  def extract_domain(url) do
+    case URI.parse(url) do
+      %URI{host: host} when is_binary(host) -> host
+      _ -> "unknown"
+    end
+  end
+
+  def format_time_ago(datetime) do
+    now = DateTime.utc_now()
+
+    # Convert NaiveDateTime to DateTime if needed
+    datetime =
+      case datetime do
+        %DateTime{} = dt -> dt
+        %NaiveDateTime{} = ndt -> DateTime.from_naive!(ndt, "Etc/UTC")
+      end
+
+    diff = DateTime.diff(now, datetime, :second)
+
+    cond do
+      diff < 60 -> "#{diff}s ago"
+      diff < 3600 -> "#{div(diff, 60)}m ago"
+      diff < 86400 -> "#{div(diff, 3600)}h ago"
+      true -> "#{div(diff, 86400)}d ago"
+    end
   end
 end
