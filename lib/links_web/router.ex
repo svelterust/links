@@ -53,7 +53,7 @@ defmodule LinksWeb.Router do
       live "/users/settings/confirm-email/:token", UserLive.Settings, :confirm_email
     end
 
-    post "/users/update-password", UserSessionController, :update_password
+
   end
 
   scope "/", LinksWeb do
@@ -61,7 +61,6 @@ defmodule LinksWeb.Router do
 
     live_session :current_user,
       on_mount: [{LinksWeb.UserAuth, :mount_current_scope}] do
-      live "/users/register", UserLive.Registration, :new
       live "/users/log-in", UserLive.Login, :new
       live "/users/log-in/:token", UserLive.Confirmation, :new
     end

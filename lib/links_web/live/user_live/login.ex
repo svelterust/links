@@ -6,89 +6,40 @@ defmodule LinksWeb.UserLive.Login do
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope}>
-      <div class="mx-auto max-w-sm space-y-4">
-        <.header class="text-center">
-          <p>Log in</p>
-          <:subtitle>
-            <%= if @current_scope do %>
-              You need to reauthenticate to perform sensitive actions on your account.
-            <% else %>
-              Don't have an account? <.link
-                navigate={~p"/users/register"}
-                class="font-semibold text-brand hover:underline"
-                phx-no-format
-              >Sign up</.link> for an account now.
-            <% end %>
-          </:subtitle>
-        </.header>
-
-        <div :if={local_mail_adapter?()} class="alert alert-info">
-          <.icon name="hero-information-circle" class="size-6 shrink-0" />
-          <div>
-            <p>You are running the local mail adapter.</p>
-            <p>
-              To see sent emails, visit <.link href="/dev/mailbox" class="underline">the mailbox page</.link>.
-            </p>
-          </div>
-        </div>
+        <p class="text-gray-600 mb-4">
+          Login to your account with email. If account doesn't exist, it will be created for you.
+        </p>
 
         <.form
           :let={f}
           for={@form}
-          id="login_form_magic"
+          id="login_form"
           action={~p"/users/log-in"}
           phx-submit="submit_magic"
         >
-          <.input
-            readonly={!!@current_scope}
-            field={f[:email]}
-            type="email"
-            label="Email"
-            autocomplete="username"
-            required
-            phx-mounted={JS.focus()}
-          />
-          <.button class="w-full" variant="primary">
-            Log in with email <span aria-hidden="true">→</span>
-          </.button>
-        </.form>
-
-        <div class="divider">or</div>
-
-        <.form
-          :let={f}
-          for={@form}
-          id="login_form_password"
-          action={~p"/users/log-in"}
-          phx-submit="submit_password"
-          phx-trigger-action={@trigger_submit}
-        >
-          <.input
-            readonly={!!@current_scope}
-            field={f[:email]}
-            type="email"
-            label="Email"
-            autocomplete="username"
-            required
-          />
-          <.input
-            field={@form[:password]}
-            type="password"
-            label="Password"
-            autocomplete="current-password"
-          />
-          <.input
-            :if={!@current_scope}
-            field={f[:remember_me]}
-            type="checkbox"
-            label="Keep me logged in"
-          />
-          <.button class="w-full" variant="primary">
-            Log in <span aria-hidden="true">→</span>
-          </.button>
-        </.form>
-      </div>
-    </Layouts.app>
+        <div class="form-control">
+          <p class="label block mb-2">
+            <span class="label-text">Email</span>
+          </p>
+          <div class="join">
+            <input
+              readonly={!!@current_scope}
+              name={f[:email].name}
+              value={f[:email].value}
+              type="email"
+              placeholder="Enter your email"
+              autocomplete="email"
+              phx-mounted={JS.focus()}
+              class="input join-item"
+              required
+            />
+            <button type="submit" class="btn join-item">
+              Login
+            </button>
+          </div>
+        </div>
+      </.form>
+  </Layouts.app>
     """
   end
 
@@ -99,23 +50,29 @@ defmodule LinksWeb.UserLive.Login do
 
     form = to_form(%{"email" => email}, as: "user")
 
-    {:ok, assign(socket, form: form, trigger_submit: false)}
-  end
-
-  def handle_event("submit_password", _params, socket) do
-    {:noreply, assign(socket, :trigger_submit, true)}
+    {:ok, assign(socket, form: form, trigger_submit: false) |> assign(:page_title, "Login")}
   end
 
   def handle_event("submit_magic", %{"user" => %{"email" => email}}, socket) do
-    if user = Accounts.get_user_by_email(email) do
+    # Get existing user or create new one
+    user = case Accounts.get_user_by_email(email) do
+      nil ->
+        # Create new user
+        case Accounts.register_user(%{"email" => email}) do
+          {:ok, user} -> user
+          {:error, _changeset} -> nil
+        end
+      existing_user -> existing_user
+    end
+
+    if user do
       Accounts.deliver_login_instructions(
         user,
         &url(~p"/users/log-in/#{&1}")
       )
     end
 
-    info =
-      "If your email is in our system, you will receive instructions for logging in shortly."
+    info = "We've sent you a magic link to log in. Check your email!"
 
     {:noreply,
      socket
