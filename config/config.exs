@@ -7,6 +7,19 @@
 # General application configuration
 import Config
 
+config :links, :scopes,
+  user: [
+    default: true,
+    module: Links.Accounts.Scope,
+    assign_key: :current_scope,
+    access_path: [:user, :id],
+    schema_key: :user_id,
+    schema_type: :id,
+    schema_table: :users,
+    test_data_fixture: Links.AccountsFixtures,
+    test_login_helper: :register_and_log_in_user
+  ]
+
 config :links,
   ecto_repos: [Links.Repo],
   generators: [timestamp_type: :utc_datetime]

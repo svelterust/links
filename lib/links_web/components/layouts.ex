@@ -37,8 +37,14 @@ defmodule LinksWeb.Layouts do
           <h1 class="text-3xl font-bold text-gray-900 mb-2">Links</h1>
         </a>
         <nav class="flex space-x-6">
-          <a href="/login" class="text-gray-600 hover:text-black transition-colors">Login</a>
-          <a href="/register" class="text-gray-600 hover:text-black transition-colors">Register</a>
+          <%= if @current_scope do %>
+            <span class="text-gray-600">{@current_scope.user.email}</span>
+            <.link href={~p"/users/settings"} class="text-gray-600 hover:text-black transition-colors">Settings</.link>
+            <.link href={~p"/users/log-out"} method="delete" class="text-gray-600 hover:text-black transition-colors">Log out</.link>
+          <% else %>
+            <.link href={~p"/users/register"} class="text-gray-600 hover:text-black transition-colors">Register</.link>
+            <.link href={~p"/users/log-in"} class="text-gray-600 hover:text-black transition-colors">Log in</.link>
+          <% end %>
         </nav>
       </header>
 
