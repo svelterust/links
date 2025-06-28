@@ -1,9 +1,4 @@
-<div class="max-w-4xl mx-auto px-4 py-6">
-  <header class="mb-8">
-    <h1 class="text-3xl font-bold text-gray-900 mb-2">Links</h1>
-    <p class="text-gray-600">A community-driven link aggregator.</p>
-  </header>
-
+<Layouts.app flash={@flash}>
   <div class="space-y-4">
     <%= for post <- @posts do %>
       <article class="flex items-start space-x-4 p-4 bg-white rounded-lg border border-gray-200 hover:border-gray-300 transition-colors">
@@ -11,7 +6,7 @@
           <button class="text-gray-400 hover:text-orange-500 transition-colors">
             <.icon name="hero-chevron-up" class="w-4 h-4" />
           </button>
-          <span class="text-sm font-medium text-gray-900"><%= post.points %></span>
+          <span class="text-sm font-medium text-gray-900">{post.points}</span>
           <button class="text-gray-400 hover:text-orange-500 transition-colors">
             <.icon name="hero-chevron-down" class="w-4 h-4" />
           </button>
@@ -22,25 +17,24 @@
             <div class="flex-1 min-w-0">
               <h3 class="text-lg font-medium text-gray-900 hover:text-blue-600 transition-colors">
                 <a href={post.url} target="_blank" rel="noopener noreferrer" class="block">
-                  <%= post.title %>
-                  <span class="text-sm text-gray-500 ml-2">(<%= extract_domain(post.url) %>)</span>
+                  {post.title}
+                  <span class="text-sm text-gray-500 ml-2">({extract_domain(post.url)})</span>
                 </a>
               </h3>
 
               <div class="mt-2 flex items-center space-x-4 text-sm text-gray-500">
-                <span>by <%= post.author %></span>
-                <span><%= format_time_ago(post.inserted_at) %></span>
+                <span>by {post.author}</span>
+                <span>{format_time_ago(post.inserted_at)}</span>
                 <.link
                   navigate={~p"/posts/#{post.id}/comments"}
-                  class="hover:text-gray-700 transition-colors flex items-center space-x-1"
+                  class="hover:text-gray-700 transition-colors"
                 >
-                  <.icon name="hero-chat-bubble-left" class="w-4 h-4" />
-                  <span><%= post.comment_count %> comments</span>
+                  <span>{post.comment_count} comments</span>
                 </.link>
                 <div class="flex space-x-2">
                   <%= for tag <- post.tags do %>
                     <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                      <%= tag %>
+                      {tag}
                     </span>
                   <% end %>
                 </div>
@@ -51,4 +45,4 @@
       </article>
     <% end %>
   </div>
-</div>
+</Layouts.app>

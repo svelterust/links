@@ -19,7 +19,7 @@ defmodule LinksWeb.Layouts do
       <Layouts.app flash={@flash}>
         <h1>Content</h1>
       </Layout.app>
-      
+
   """
   attr :flash, :map, required: true, doc: "the map of flash messages"
 
@@ -31,29 +31,21 @@ defmodule LinksWeb.Layouts do
 
   def app(assigns) do
     ~H"""
-    <header class="bg-orange-500 text-white px-4 py-3">
-      <div class="max-w-6xl mx-auto flex items-center justify-between">
-        <div class="flex items-center space-x-4">
-          <a href="/" class="text-xl font-bold hover:text-orange-100 transition-colors">
-            Links
-          </a>
-          <nav class="hidden md:flex space-x-4">
-            <a href="/" class="hover:text-orange-100 transition-colors">Home</a>
-            <a href="/new" class="hover:text-orange-100 transition-colors">Submit</a>
-            <a href="/recent" class="hover:text-orange-100 transition-colors">Recent</a>
-            <a href="/comments" class="hover:text-orange-100 transition-colors">Comments</a>
-          </nav>
-        </div>
-        <div class="flex items-center space-x-4">
-          <a href="/login" class="hover:text-orange-100 transition-colors">Login</a>
-          <a href="/signup" class="bg-orange-600 hover:bg-orange-700 px-3 py-1 rounded transition-colors">Sign Up</a>
-        </div>
-      </div>
-    </header>
+    <div class="max-w-4xl mx-auto px-4 py-6">
+      <header class="mb-6 flex justify-between items-center">
+        <a href="/">
+          <h1 class="text-3xl font-bold text-gray-900 mb-2">Links</h1>
+        </a>
+        <nav class="flex space-x-6">
+          <a href="/login" class="text-gray-600 hover:text-black transition-colors">Login</a>
+          <a href="/register" class="text-gray-600 hover:text-black transition-colors">Register</a>
+        </nav>
+      </header>
 
-    <main class="min-h-screen bg-gray-50">
-      {render_slot(@inner_block)}
-    </main>
+      <main>
+        {render_slot(@inner_block)}
+      </main>
+    </div>
 
     <.flash_group flash={@flash} />
     """

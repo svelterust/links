@@ -7,8 +7,6 @@ defmodule LinksWeb.HomeLive do
     {:ok, socket |> assign(:posts, Posts.list_posts_by_points()) |> assign(:page_title, "Home")}
   end
 
-
-
   defp extract_domain(url) do
     case URI.parse(url) do
       %URI{host: host} when is_binary(host) -> host
