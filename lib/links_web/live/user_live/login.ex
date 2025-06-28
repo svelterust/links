@@ -6,8 +6,8 @@ defmodule LinksWeb.UserLive.Login do
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope}>
-        <p class="text-gray-600 mb-4">
-          Login to your account with email. If account doesn't exist, it will be created for you.
+        <p class="text-gray-600 mb-6">
+          Login to your account. If account doesn't exist, it will be created for you.
         </p>
 
         <.form
@@ -30,10 +30,10 @@ defmodule LinksWeb.UserLive.Login do
               placeholder="Enter your email"
               autocomplete="email"
               phx-mounted={JS.focus()}
-              class="input join-item"
+              class="input min-w-xs join-item"
               required
             />
-            <button type="submit" class="btn join-item">
+            <button type="submit" class="btn btn-primary join-item">
               Login
             </button>
           </div>
@@ -72,7 +72,7 @@ defmodule LinksWeb.UserLive.Login do
       )
     end
 
-    info = "We've sent you a magic link to log in. Check your email!"
+    info = "We've sent you a magic link to login. Check your email!"
 
     {:noreply,
      socket

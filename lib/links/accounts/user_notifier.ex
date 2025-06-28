@@ -39,7 +39,7 @@ defmodule Links.Accounts.UserNotifier do
   end
 
   @doc """
-  Deliver instructions to log in with a magic link.
+  Deliver instructions to login with a magic link.
   """
   def deliver_login_instructions(user, url) do
     case user do
@@ -49,13 +49,13 @@ defmodule Links.Accounts.UserNotifier do
   end
 
   defp deliver_magic_link_instructions(user, url) do
-    deliver(user.email, "Log in instructions", """
+    deliver(user.email, "Login instructions", """
 
     ==============================
 
     Hi #{user.email},
 
-    You can log into your account by visiting the URL below:
+    You can login to your account by visiting the URL below:
 
     #{url}
 

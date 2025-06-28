@@ -62,10 +62,10 @@ defmodule LinksWeb.Router do
     live_session :current_user,
       on_mount: [{LinksWeb.UserAuth, :mount_current_scope}] do
       live "/users/log-in", UserLive.Login, :new
-      live "/users/log-in/:token", UserLive.Confirmation, :new
     end
 
     post "/users/log-in", UserSessionController, :create
+    get "/users/log-in/:token", UserSessionController, :magic_link_login
     delete "/users/log-out", UserSessionController, :delete
   end
 end

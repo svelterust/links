@@ -126,7 +126,7 @@ defmodule LinksWeb.UserAuth do
 
   # This function renews the session ID and erases the whole
   # session to avoid fixation attacks. If there is any data
-  # in the session you may want to preserve after log in/log out,
+  # in the session you may want to preserve after login/log out,
   # you must explicitly fetch the session data before clearing
   # and then immediately set it after clearing, for example:
   #
@@ -223,7 +223,7 @@ defmodule LinksWeb.UserAuth do
     else
       socket =
         socket
-        |> Phoenix.LiveView.put_flash(:error, "You must log in to access this page.")
+        |> Phoenix.LiveView.put_flash(:error, "You must login to access this page.")
         |> Phoenix.LiveView.redirect(to: ~p"/users/log-in")
 
       {:halt, socket}
@@ -256,7 +256,7 @@ defmodule LinksWeb.UserAuth do
     end)
   end
 
-  @doc "Returns the path to redirect to after log in."
+  @doc "Returns the path to redirect to after login."
   # the user was already logged in, redirect to settings
   def signed_in_path(%Plug.Conn{assigns: %{current_scope: %Scope{user: %Accounts.User{}}}}) do
     ~p"/users/settings"
@@ -272,7 +272,7 @@ defmodule LinksWeb.UserAuth do
       conn
     else
       conn
-      |> put_flash(:error, "You must log in to access this page.")
+      |> put_flash(:error, "You must login to access this page.")
       |> maybe_store_return_to()
       |> redirect(to: ~p"/users/log-in")
       |> halt()

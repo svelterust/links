@@ -17,7 +17,7 @@ defmodule LinksWeb.UserSessionController do
     case Accounts.login_user_by_magic_link(token) do
       {:ok, user, tokens_to_disconnect} ->
         UserAuth.disconnect_sessions(tokens_to_disconnect)
-        
+
         # Always remember users by setting remember_me to true
         user_params_with_remember = Map.put(user_params, "remember_me", "true")
 
@@ -34,9 +34,24 @@ defmodule LinksWeb.UserSessionController do
 
 
 
+  def magic_link_login(conn, %{"token" => token}) do
+    case Accounts.login_user_by_magic_link(token) do
+      {:ok, user, tokens_to_disconnect} ->
+        UserAuth.disconnect_sessions(tokens_to_disconnect)
+
+        conn
+        |> put_flash(:info, "You have been logged in!")
+        |> UserAuth.log_in_user(user, %{"remember_me" => "true"})
+
+      _ ->
+        conn
+        |> put_flash(:error, "The link is invalid or it has expired.")
+        |> redirect(to: ~p"/users/log-in")
+    end
+  end
+
   def delete(conn, _params) do
     conn
-    |> put_flash(:info, "Logged out successfully.")
     |> UserAuth.log_out_user()
   end
 end

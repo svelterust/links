@@ -42,7 +42,7 @@ defmodule LinksWeb.Layouts do
             <.link href={~p"/users/settings"} class="text-gray-600 hover:text-black transition-colors">Settings</.link>
             <.link href={~p"/users/log-out"} method="delete" class="text-gray-600 hover:text-black transition-colors">Log out</.link>
           <% else %>
-            <.link href={~p"/users/log-in"} class="text-gray-600 hover:text-black transition-colors">Log in</.link>
+            <.link href={~p"/users/log-in"} class="btn">Login</.link>
           <% end %>
         </nav>
       </header>

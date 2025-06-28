@@ -8,9 +8,9 @@ defmodule LinksWeb.UserLive.LoginTest do
     test "renders login page", %{conn: conn} do
       {:ok, _lv, html} = live(conn, ~p"/users/log-in")
 
-      assert html =~ "Log in"
+      assert html =~ "Login"
       assert html =~ "Register"
-      assert html =~ "Log in with email"
+      assert html =~ "Login with email"
     end
   end
 
@@ -102,7 +102,7 @@ defmodule LinksWeb.UserLive.LoginTest do
 
       assert html =~ "You need to reauthenticate"
       refute html =~ "Register"
-      assert html =~ "Log in with email"
+      assert html =~ "Login with email"
 
       assert html =~
                ~s(<input type="email" name="user[email]" id="login_form_magic_email" value="#{user.email}")

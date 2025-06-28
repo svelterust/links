@@ -96,7 +96,7 @@ defmodule LinksWeb.UserAuthTest do
         |> init_test_session(%{user_remember_me: true})
 
       # the conn is already logged in and has the remember_me cookie set,
-      # now we log in again and even without explicitly setting remember_me,
+      # now we login again and even without explicitly setting remember_me,
       # the cookie should be set again
       conn = conn |> UserAuth.log_in_user(user, %{})
       assert %{value: signed_token, max_age: max_age} = conn.resp_cookies[@remember_me_cookie]
@@ -326,7 +326,7 @@ defmodule LinksWeb.UserAuthTest do
       assert redirected_to(conn) == ~p"/users/log-in"
 
       assert Phoenix.Flash.get(conn.assigns.flash, :error) ==
-               "You must log in to access this page."
+               "You must login to access this page."
     end
 
     test "stores the path to redirect to on GET", %{conn: conn} do

@@ -233,7 +233,7 @@ defmodule Links.Accounts do
       # Prevent session fixation attacks by disallowing magic links for unconfirmed users with password
       {%User{confirmed_at: nil, hashed_password: hash}, _token} when not is_nil(hash) ->
         raise """
-        magic link log in is not allowed for unconfirmed users with a password set!
+        magic link login is not allowed for unconfirmed users with a password set!
 
         This cannot happen with the default implementation, which indicates that you
         might have adapted the code to a different use case. Please make sure to read the
