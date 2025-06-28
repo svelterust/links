@@ -38,10 +38,10 @@ defmodule LinksWeb.Layouts do
         </a>
         <nav class="flex space-x-6 items-center">
           <%= if @current_scope do %>
-            <.link href={~p"/users/log-out"} method="delete" class="text-gray-600 hover:text-black transition-colors">Log out</.link>
-            <.link href={~p"/users/settings"} class="btn">{@current_scope.user.email}</.link>
+            <.link href={~p"/log-out"} method="delete" class="text-gray-600 hover:text-black transition-colors">Log out</.link>
+            <.link href={~p"/settings"} class="btn">{@current_scope.user.email}</.link>
           <% else %>
-            <.link href={~p"/users/login"} class="btn">Login</.link>
+            <.link href={~p"/login"} class="btn">Login</.link>
           <% end %>
         </nav>
       </header>

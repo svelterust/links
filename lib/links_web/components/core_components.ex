@@ -503,7 +503,7 @@ defmodule LinksWeb.CoreComponents do
               <span>by {@post.author}</span>
               <span>{format_time_ago(@post.inserted_at)}</span>
               <.link
-                navigate={~p"/posts/#{@post.id}/comments"}
+                navigate={~p"/posts/#{@post.id}"}
                 class="hover:text-gray-700 transition-colors"
               >
                 <span>{@post.comment_count} comments</span>

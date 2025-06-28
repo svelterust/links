@@ -6,7 +6,6 @@ defmodule LinksWeb.UserLive.Settings do
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope}>
-          <h2 class="text-2xl font-semibold mb-4">Settings</h2>
           <p class="text-gray-600 mb-4">
             Want to update your email address? Put your new email address below, then we'll send a confirmation link to your new email.
           </p>
@@ -54,7 +53,7 @@ defmodule LinksWeb.UserLive.Settings do
           put_flash(socket, :error, "Email change link is invalid or it has expired.")
       end
 
-    {:ok, push_navigate(socket, to: ~p"/users/settings")}
+    {:ok, push_navigate(socket, to: ~p"/settings")}
   end
 
   def mount(_params, _session, socket) do
@@ -65,6 +64,7 @@ defmodule LinksWeb.UserLive.Settings do
       socket
       |> assign(:current_email, user.email)
       |> assign(:email_form, to_form(email_changeset))
+      |> assign(:page_title, "Settings")
 
     {:ok, socket}
   end
@@ -90,7 +90,7 @@ defmodule LinksWeb.UserLive.Settings do
         Accounts.deliver_user_update_email_instructions(
           Ecto.Changeset.apply_action!(changeset, :insert),
           user.email,
-          &url(~p"/users/settings/confirm-email/#{&1}")
+          &url(~p"/settings/confirm-email/#{&1}")
         )
 
         info = "A link to confirm your email change has been sent to the new address."

@@ -20,7 +20,7 @@ defmodule LinksWeb.UserLive.Login do
             :let={f}
             for={@form}
             id="login_form"
-            action={~p"/users/login"}
+            action={~p"/login"}
             phx-submit="submit_magic"
           >
           <div class="form-control">
@@ -75,14 +75,13 @@ defmodule LinksWeb.UserLive.Login do
     if user do
       Accounts.deliver_login_instructions(
         user,
-        &url(~p"/users/login/#{&1}")
+        &url(~p"/login/#{&1}")
       )
     end
 
-    info = "We've sent you a magic link to login. Check your email!"
-
     {:noreply,
      socket
+     |> put_flash(:info, "We've sent you a magic link to login. Check your email!")
      |> assign(:login_sent, true)}
   end
 

@@ -23,7 +23,7 @@ defmodule LinksWeb.Router do
     live_session :default,
       on_mount: [{LinksWeb.UserAuth, :mount_current_scope}] do
       live "/", HomeLive
-      live "/posts/:id/comments", CommentsLive
+      live "/posts/:id", CommentsLive
     end
   end
 
@@ -42,8 +42,8 @@ defmodule LinksWeb.Router do
 
     live_session :require_authenticated_user,
       on_mount: [{LinksWeb.UserAuth, :require_authenticated}] do
-      live "/users/settings", UserLive.Settings, :edit
-      live "/users/settings/confirm-email/:token", UserLive.Settings, :confirm_email
+      live "/settings", UserLive.Settings, :edit
+      live "/settings/confirm-email/:token", UserLive.Settings, :confirm_email
     end
   end
 
@@ -52,11 +52,11 @@ defmodule LinksWeb.Router do
 
     live_session :current_user,
       on_mount: [{LinksWeb.UserAuth, :mount_current_scope}] do
-      live "/users/login", UserLive.Login, :new
+      live "/login", UserLive.Login, :new
     end
 
-    post "/users/login", UserSessionController, :create
-    get "/users/login/:token", UserSessionController, :magic_link_login
-    delete "/users/log-out", UserSessionController, :delete
+    post "/login", UserSessionController, :create
+    get "/login/:token", UserSessionController, :magic_link_login
+    delete "/log-out", UserSessionController, :delete
   end
 end

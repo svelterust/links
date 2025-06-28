@@ -28,7 +28,7 @@ defmodule LinksWeb.UserSessionController do
       _ ->
         conn
         |> put_flash(:error, "The link is invalid or it has expired.")
-        |> redirect(to: ~p"/users/login")
+        |> redirect(to: ~p"/login")
     end
   end
 
@@ -46,7 +46,7 @@ defmodule LinksWeb.UserSessionController do
       _ ->
         conn
         |> put_flash(:error, "The link is invalid or it has expired.")
-        |> redirect(to: ~p"/users/login")
+        |> redirect(to: ~p"/login")
     end
   end
 
