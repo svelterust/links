@@ -473,10 +473,8 @@ defmodule LinksWeb.CoreComponents do
   ## Examples
 
       <.post_card post={@post} />
-      <.post_card post={@post} show_comments_link={false} />
   """
   attr :post, :map, required: true
-  attr :show_comments_link, :boolean, default: true
 
   def post_card(assigns) do
     ~H"""
@@ -505,7 +503,6 @@ defmodule LinksWeb.CoreComponents do
               <span>by {@post.author}</span>
               <span>{format_time_ago(@post.inserted_at)}</span>
               <.link
-                :if={@show_comments_link}
                 navigate={~p"/posts/#{@post.id}/comments"}
                 class="hover:text-gray-700 transition-colors"
               >

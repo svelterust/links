@@ -4,6 +4,6 @@ defmodule LinksWeb.HomeLive do
   alias Links.Posts
 
   def mount(_params, _session, socket) do
-    {:ok, socket |> assign(:posts, Posts.list_posts_by_points()) |> assign(:page_title, "Home")}
+    {:ok, socket |> assign(:posts, Posts.list_posts_by_points()) |> assign(:page_title, "Posts")}
   end
 end
