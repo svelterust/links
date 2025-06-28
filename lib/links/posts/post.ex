@@ -11,6 +11,7 @@ defmodule Links.Posts.Post do
     field :tags, {:array, :string}, default: []
 
     has_many :comments, Links.Posts.Comment, foreign_key: :link_id
+    has_many :votes, Links.Posts.Vote, foreign_key: :post_id
 
     timestamps(type: :utc_datetime)
   end

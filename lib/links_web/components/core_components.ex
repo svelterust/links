@@ -27,6 +27,7 @@ defmodule LinksWeb.CoreComponents do
 
   """
   use Phoenix.Component
+
   use Phoenix.VerifiedRoutes,
     endpoint: LinksWeb.Endpoint,
     router: LinksWeb.Router,
@@ -475,16 +476,46 @@ defmodule LinksWeb.CoreComponents do
       <.post_card post={@post} />
   """
   attr :post, :map, required: true
+  attr :current_user, :map, default: nil
+  attr :user_vote, :map, default: nil
 
   def post_card(assigns) do
     ~H"""
     <article class="flex items-start space-x-4 p-4 bg-white rounded-lg border border-gray-200 hover:border-gray-300 transition-colors">
       <div class="flex flex-col items-center space-y-1 min-w-0">
-        <button class="text-gray-400 hover:text-orange-500 transition-colors">
+        <button
+          phx-click="vote"
+          phx-value-post_id={@post.id}
+          phx-value-type="up"
+          class={[
+            "transition-all duration-200 ease-in-out transform hover:scale-110 active:scale-95",
+            if(@current_user == nil,
+              do: "text-gray-300 cursor-not-allowed",
+              else: if(@user_vote && @user_vote.type == "up",
+                do: "text-orange-500 cursor-pointer",
+                else: "text-gray-400 hover:text-orange-500 cursor-pointer"))
+          ]}
+          disabled={@current_user == nil}
+          title={if @current_user == nil, do: "Login to vote", else: "Upvote"}
+        >
           <.icon name="hero-chevron-up" class="w-4 h-4" />
         </button>
         <span class="text-sm font-medium text-gray-900">{@post.points}</span>
-        <button class="text-gray-400 hover:text-orange-500 transition-colors">
+        <button 
+          phx-click="vote" 
+          phx-value-post_id={@post.id} 
+          phx-value-type="down"
+          class={[
+            "transition-all duration-200 ease-in-out transform hover:scale-110 active:scale-95",
+            if(@current_user == nil,
+              do: "text-gray-300 cursor-not-allowed",
+              else: if(@user_vote && @user_vote.type == "down", 
+                do: "text-orange-500 cursor-pointer", 
+                else: "text-gray-400 hover:text-orange-500 cursor-pointer"))
+          ]}
+          disabled={@current_user == nil}
+          title={if @current_user == nil, do: "Login to vote", else: "Downvote"}
+        >
           <.icon name="hero-chevron-down" class="w-4 h-4" />
         </button>
       </div>
@@ -495,17 +526,14 @@ defmodule LinksWeb.CoreComponents do
             <h3 class="text-lg font-medium text-gray-900 hover:text-blue-600 transition-colors">
               <a href={@post.url} target="_blank" rel="noopener noreferrer" class="block">
                 {@post.title}
-                <span class="text-sm text-gray-500 ml-2">({extract_domain(@post.url)})</span>
+                <span class="text-sm text-gray-500 ml-2">{extract_domain(@post.url)}</span>
               </a>
             </h3>
 
             <div class="mt-2 flex items-center space-x-4 text-sm text-gray-500">
               <span>by {@post.author}</span>
               <span>{format_time_ago(@post.inserted_at)}</span>
-              <.link
-                navigate={~p"/posts/#{@post.id}"}
-                class="hover:text-gray-700 transition-colors"
-              >
+              <.link navigate={~p"/posts/#{@post.id}"} class="hover:text-gray-700 transition-colors">
                 <span>{@post.comment_count} comments</span>
               </.link>
               <div class="flex space-x-2">

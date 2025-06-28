@@ -1,7 +1,11 @@
 <Layouts.app flash={@flash} current_scope={@current_scope}>
   <!-- Post Header -->
   <div class="mb-8">
-    <.post_card post={@post} />
+    <.post_card 
+      post={@post} 
+      current_user={@current_user}
+      user_vote={@user_vote}
+    />
   </div>
 
   <!-- Comments List -->

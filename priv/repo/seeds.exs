@@ -13,17 +13,37 @@
 alias Links.Repo
 alias Links.Posts.Post
 alias Links.Posts.Comment
+alias Links.Posts.Vote
+alias Links.Accounts.User
 
 # Clear existing data
 Repo.delete_all(Comment)
+Repo.delete_all(Vote)
 Repo.delete_all(Post)
+Repo.delete_all(User)
+
+# Create test users
+_user1 = Repo.insert!(%User{
+  email: "alice@example.com",
+  confirmed_at: DateTime.utc_now() |> DateTime.truncate(:second)
+})
+
+_user2 = Repo.insert!(%User{
+  email: "bob@example.com", 
+  confirmed_at: DateTime.utc_now() |> DateTime.truncate(:second)
+})
+
+_user3 = Repo.insert!(%User{
+  email: "charlie@example.com",
+  confirmed_at: DateTime.utc_now() |> DateTime.truncate(:second)
+})
 
 # Create posts using Repo.insert! directly
 post1 = Repo.insert!(%Post{
   title: "Phoenix LiveView 1.0 Released",
   url: "https://phoenixframework.org/blog/phoenix-liveview-1-0-released",
   author: "chrismccord",
-  points: 234,
+  points: 0,
   comment_count: 3,
   tags: ["elixir", "phoenix", "web"]
 })
@@ -32,7 +52,7 @@ post2 = Repo.insert!(%Post{
   title: "Building Real-time Applications with Elixir and Phoenix",
   url: "https://example.com/realtime-elixir",
   author: "josevalim",
-  points: 189,
+  points: 0,
   comment_count: 2,
   tags: ["elixir", "real-time"]
 })
@@ -41,7 +61,7 @@ post3 = Repo.insert!(%Post{
   title: "The Future of Functional Programming",
   url: "https://example.com/functional-programming-future",
   author: "functional_fan",
-  points: 156,
+  points: 0,
   comment_count: 1,
   tags: ["programming", "functional"]
 })
@@ -50,7 +70,7 @@ post4 = Repo.insert!(%Post{
   title: "Distributed Systems in Elixir: A Complete Guide",
   url: "https://example.com/distributed-elixir",
   author: "distributed_dev",
-  points: 298,
+  points: 0,
   comment_count: 1,
   tags: ["elixir", "distributed", "guide"]
 })
@@ -59,7 +79,7 @@ post5 = Repo.insert!(%Post{
   title: "Why I Chose Elixir for My Startup",
   url: "https://example.com/elixir-startup",
   author: "startup_founder",
-  points: 142,
+  points: 0,
   comment_count: 1,
   tags: ["elixir", "startup", "business"]
 })
@@ -68,7 +88,7 @@ post6 = Repo.insert!(%Post{
   title: "GenServer Patterns and Best Practices",
   url: "https://example.com/genserver-patterns",
   author: "elixir_expert",
-  points: 178,
+  points: 0,
   comment_count: 1,
   tags: ["elixir", "genserver", "patterns"]
 })
@@ -77,7 +97,7 @@ post7 = Repo.insert!(%Post{
   title: "Building a Link Aggregator with Phoenix LiveView",
   url: "https://example.com/link-aggregator-liveview",
   author: "phoenix_dev",
-  points: 201,
+  points: 0,
   comment_count: 1,
   tags: ["phoenix", "liveview", "tutorial"]
 })
@@ -86,7 +106,7 @@ post8 = Repo.insert!(%Post{
   title: "Elixir Performance Tips and Tricks",
   url: "https://example.com/elixir-performance",
   author: "performance_guru",
-  points: 267,
+  points: 0,
   comment_count: 1,
   tags: ["elixir", "performance", "optimization"]
 })

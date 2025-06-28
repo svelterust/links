@@ -8,6 +8,8 @@ defmodule Links.Posts do
 
   alias Links.Posts.Post
   alias Links.Posts.Comment
+  alias Links.Posts.Vote
+  alias Links.Accounts.User
 
   @doc """
   Returns the list of posts.
@@ -196,6 +198,99 @@ defmodule Links.Posts do
     |> Repo.update()
   end
 
+  @doc """
+  Votes on a post by a user. Only allows one vote per user per post.
+  If user already voted, updates the vote. Returns updated post with new points.
+
+  ## Examples
+
+      iex> vote_on_post(user, post, "up")
+      {:ok, %Post{}}
+
+      iex> vote_on_post(user, post, "down")
+      {:ok, %Post{}}
+
+  """
+  def vote_on_post(%User{} = user, %Post{} = post, vote_type) when vote_type in ["up", "down"] do
+    existing_vote = get_user_vote_for_post(user.id, post.id)
+    
+    case handle_vote(existing_vote, user, post, vote_type) do
+      {:ok, _vote_result} ->
+        # Recalculate points based on votes
+        new_points = calculate_post_points(post.id)
+        update_post(post, %{points: new_points})
+      
+      error ->
+        error
+    end
+  end
+
+  @doc """
+  Gets the current user's vote for a specific post.
+
+  ## Examples
+
+      iex> get_user_vote_for_post(user_id, post_id)
+      %Vote{}
+
+      iex> get_user_vote_for_post(user_id, post_id)
+      nil
+
+  """
+  def get_user_vote_for_post(user_id, post_id) do
+    Repo.get_by(Vote, user_id: user_id, post_id: post_id)
+  end
+
+  @doc """
+  Gets all votes for a specific post with user information.
+
+  ## Examples
+
+      iex> get_post_votes(post_id)
+      [%Vote{}, ...]
+
+  """
+  def get_post_votes(post_id) do
+    Repo.all(from v in Vote, where: v.post_id == ^post_id, preload: [:user])
+  end
+
+  @doc """
+  Calculates the total points for a post based on votes.
+
+  ## Examples
+
+      iex> calculate_post_points(post_id)
+      5
+
+  """
+  def calculate_post_points(post_id) do
+    from(v in Vote,
+      where: v.post_id == ^post_id,
+      select: %{
+        upvotes: fragment("COUNT(CASE WHEN ? = 'up' THEN 1 END)", v.type),
+        downvotes: fragment("COUNT(CASE WHEN ? = 'down' THEN 1 END)", v.type)
+      }
+    )
+    |> Repo.one()
+    |> case do
+      %{upvotes: upvotes, downvotes: downvotes} -> upvotes - downvotes
+      _ -> 0
+    end
+  end
+
+  @doc """
+  Gets user votes for multiple posts in batch for efficiency.
+
+  ## Examples
+
+      iex> get_user_votes_for_posts(user_id, [1, 2, 3])
+      [%Vote{}, ...]
+
+  """
+  def get_user_votes_for_posts(user_id, post_ids) do
+    Repo.all(from v in Vote, where: v.user_id == ^user_id and v.post_id in ^post_ids)
+  end
+
   # Comments
 
   @doc """
@@ -328,6 +423,25 @@ defmodule Links.Posts do
   end
 
   # Private functions
+
+  defp handle_vote(nil, user, post, vote_type) do
+    # Create new vote
+    %Vote{}
+    |> Vote.changeset(%{user_id: user.id, post_id: post.id, type: vote_type})
+    |> Repo.insert()
+  end
+
+  defp handle_vote(existing_vote, _user, _post, vote_type) when existing_vote.type == vote_type do
+    # Same vote type - remove the vote (toggle off)
+    Repo.delete(existing_vote)
+  end
+
+  defp handle_vote(existing_vote, _user, _post, vote_type) do
+    # Different vote type - update the vote
+    existing_vote
+    |> Vote.changeset(%{type: vote_type})
+    |> Repo.update()
+  end
 
   defp update_post_comment_count(post_id) do
     count = Repo.aggregate(

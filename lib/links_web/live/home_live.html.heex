@@ -1,7 +1,11 @@
 <Layouts.app flash={@flash} current_scope={@current_scope}>
   <div class="space-y-4">
     <%= for post <- @posts do %>
-      <.post_card post={post} />
+      <.post_card 
+        post={post} 
+        current_user={@current_user}
+        user_vote={Map.get(@user_votes, post.id)}
+      />
     <% end %>
   </div>
 </Layouts.app>
