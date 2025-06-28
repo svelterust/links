@@ -6,41 +6,46 @@ defmodule LinksWeb.UserLive.Login do
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope}>
-    <h2 class="text-2xl font-semibold mb-4">Login</h2>
 
-    <p class="text-gray-600 mb-4">
-      Login with your email address. If you don't have an account, it will automatically be created for you.
-    </p>
+    <%= if @login_sent do %>
+        <p class="text-gray-600">
+          A magic link has been sent to your email address. Check your inbox and click the link to login.
+        </p>
+    <% else %>
+      <p class="text-gray-600 mb-4">
+        Login with your email address. If you don't have an account, it will automatically be created for you.
+      </p>
 
-    <.form
-          :let={f}
-          for={@form}
-          id="login_form"
-          action={~p"/users/login"}
-          phx-submit="submit_magic"
-        >
-        <div class="form-control">
-          <p class="label block mb-2">
-            <span class="label-text">Email</span>
-          </p>
-          <div class="join">
-            <input
-              readonly={!!@current_scope}
-              name={f[:email].name}
-              value={f[:email].value}
-              type="email"
-              placeholder="Enter your email"
-              autocomplete="email"
-              phx-mounted={JS.focus()}
-              class="input min-w-xs join-item"
-              required
-            />
-            <button type="submit" class="btn btn-primary join-item">
-              Login
-            </button>
+      <.form
+            :let={f}
+            for={@form}
+            id="login_form"
+            action={~p"/users/login"}
+            phx-submit="submit_magic"
+          >
+          <div class="form-control">
+            <p class="label block mb-2">
+              <span class="label-text">Email</span>
+            </p>
+            <div class="join">
+              <input
+                readonly={!!@current_scope}
+                name={f[:email].name}
+                value={f[:email].value}
+                type="email"
+                placeholder="Enter your email"
+                autocomplete="email"
+                phx-mounted={JS.focus()}
+                class="input min-w-xs join-item"
+                required
+              />
+              <button type="submit" class="btn btn-primary join-item">
+                Login
+              </button>
+            </div>
           </div>
-        </div>
-      </.form>
+        </.form>
+    <% end %>
   </Layouts.app>
     """
   end
@@ -52,7 +57,7 @@ defmodule LinksWeb.UserLive.Login do
 
     form = to_form(%{"email" => email}, as: "user")
 
-    {:ok, assign(socket, form: form, trigger_submit: false) |> assign(:page_title, "Login")}
+    {:ok, assign(socket, form: form, trigger_submit: false, login_sent: false) |> assign(:page_title, "Login")}
   end
 
   def handle_event("submit_magic", %{"user" => %{"email" => email}}, socket) do
@@ -78,8 +83,7 @@ defmodule LinksWeb.UserLive.Login do
 
     {:noreply,
      socket
-     |> put_flash(:info, info)
-     |> push_navigate(to: ~p"/users/login")}
+     |> assign(:login_sent, true)}
   end
 
   defp local_mail_adapter? do
