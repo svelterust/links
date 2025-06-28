@@ -6,11 +6,13 @@ defmodule LinksWeb.UserLive.Login do
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope}>
-        <p class="text-gray-600 mb-6">
-          Login to your account. If account doesn't exist, it will be created for you.
-        </p>
+    <h2 class="text-2xl font-semibold mb-4">Login</h2>
 
-        <.form
+    <p class="text-gray-600 mb-4">
+      Login with your email address. If you don't have an account, it will automatically be created for you.
+    </p>
+
+    <.form
           :let={f}
           for={@form}
           id="login_form"

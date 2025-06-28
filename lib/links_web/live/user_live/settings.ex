@@ -1,48 +1,45 @@
 defmodule LinksWeb.UserLive.Settings do
   use LinksWeb, :live_view
 
-  on_mount {LinksWeb.UserAuth, :require_sudo_mode}
-
   alias Links.Accounts
 
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope}>
-      <div class="max-w-sm mx-auto">
-        <div class="card bg-base-100 shadow-lg border border-base-200">
-          <div class="card-body">
-            <h2 class="card-title text-center justify-center mb-2">Account Settings</h2>
-            <p class="text-base-content/70 text-center text-sm mb-4">Manage your email address</p>
+          <h2 class="text-2xl font-semibold mb-4">Settings</h2>
+          <p class="text-gray-600 mb-4">
+            Want to update your email address? Put your new email address below, then we'll send a confirmation link to your new email.
+          </p>
 
-            <div class="alert alert-success mb-4">
-              <.icon name="hero-check-circle" class="size-4" />
-              <div class="text-sm">
-                <p class="font-medium">Current Email</p>
-                <p class="text-xs opacity-70">{@current_email}</p>
+          <.form for={@email_form} id="email_form" phx-submit="update_email" phx-change="validate_email">
+            <div class="form-control">
+              <p class="label block mb-2">
+                <span class="label-text">New Email</span>
+              </p>
+              <div class="join">
+                <input
+                  name={@email_form[:email].name}
+                  value={@email_form[:email].value}
+                  type="email"
+                  placeholder="Enter new email"
+                  autocomplete="username"
+                  class="input min-w-xs join-item"
+                  required
+                />
+                <button type="submit" class="btn btn-primary join-item" phx-disable-with="Sending...">
+                  Update Email
+                </button>
               </div>
+
+              <%= if @email_form[:email].errors != [] do %>
+                <div class="text-red-600 text-sm mt-1">
+                  <%= for {msg, _} <- @email_form[:email].errors do %>
+                    <p><%= msg %></p>
+                  <% end %>
+                </div>
+              <% end %>
             </div>
-
-            <.form for={@email_form} id="email_form" phx-submit="update_email" phx-change="validate_email">
-              <.input
-                field={@email_form[:email]}
-                type="email"
-                label="New email"
-                placeholder="Enter new email"
-                autocomplete="username"
-                required
-              />
-              
-              <.button phx-disable-with="Sending confirmation..." class="btn btn-primary w-full mt-4">
-                Update Email
-              </.button>
-            </.form>
-
-            <p class="text-base-content/50 text-center text-xs mt-4">
-              We'll send a confirmation link to your new email
-            </p>
-          </div>
-        </div>
-      </div>
+          </.form>
     </Layouts.app>
     """
   end
@@ -87,7 +84,6 @@ defmodule LinksWeb.UserLive.Settings do
   def handle_event("update_email", params, socket) do
     %{"user" => user_params} = params
     user = socket.assigns.current_scope.user
-    true = Accounts.sudo_mode?(user)
 
     case Accounts.change_user_email(user, user_params) do
       %{valid?: true} = changeset ->
@@ -104,6 +100,4 @@ defmodule LinksWeb.UserLive.Settings do
         {:noreply, assign(socket, :email_form, to_form(changeset, action: :insert))}
     end
   end
-
-
 end
