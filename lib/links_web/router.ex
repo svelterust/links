@@ -56,6 +56,6 @@ defmodule LinksWeb.Router do
 
     post "/login", UserSessionController, :create
     get "/login/:token", UserSessionController, :magic_link_login
-    delete "/log-out", UserSessionController, :delete
+    get "/log-out", UserSessionController, :delete
   end
 end

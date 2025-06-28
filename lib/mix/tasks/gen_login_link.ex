@@ -26,7 +26,7 @@ defmodule Mix.Tasks.GenLoginLink do
         
         Repo.all(Links.Accounts.User)
         |> Enum.each(fn user ->
-          Mix.shell().info("  - #{user.email}")
+          Mix.shell().info("  - #{user.email} (@#{user.username})")
         end)
 
       user ->
@@ -48,7 +48,7 @@ defmodule Mix.Tasks.GenLoginLink do
     
     Repo.all(Links.Accounts.User)
     |> Enum.each(fn user ->
-      Mix.shell().info("  - #{user.email}")
+      Mix.shell().info("  - #{user.email} (@#{user.username})")
     end)
   end
 

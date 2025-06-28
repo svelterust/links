@@ -25,16 +25,19 @@ Repo.delete_all(User)
 # Create test users
 _user1 = Repo.insert!(%User{
   email: "alice@example.com",
+  username: "alice",
   confirmed_at: DateTime.utc_now() |> DateTime.truncate(:second)
 })
 
 _user2 = Repo.insert!(%User{
   email: "bob@example.com", 
+  username: "bob",
   confirmed_at: DateTime.utc_now() |> DateTime.truncate(:second)
 })
 
 _user3 = Repo.insert!(%User{
   email: "charlie@example.com",
+  username: "charlie",
   confirmed_at: DateTime.utc_now() |> DateTime.truncate(:second)
 })
 

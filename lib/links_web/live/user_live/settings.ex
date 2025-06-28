@@ -6,14 +6,60 @@ defmodule LinksWeb.UserLive.Settings do
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope}>
-          <p class="text-gray-600 mb-4">
-            Want to update your email address? Put your new email address below, then we'll send a confirmation link to your new email.
-          </p>
+      <div class="space-y-8">
+        <!-- Username Update Section -->
+        <div>
+          <h2 class="text-xl font-semibold text-gray-900 mb-4">Update Username</h2>
 
-          <.form for={@email_form} id="email_form" phx-submit="update_email" phx-change="validate_email">
+          <.form
+            for={@username_form}
+            id="username_form"
+            phx-submit="update_username"
+            phx-change="validate_username"
+          >
             <div class="form-control">
               <p class="label block mb-2">
-                <span class="label-text">New Email</span>
+                <span class="label-text">Username</span>
+              </p>
+              <div class="join">
+                <input
+                  name={@username_form[:username].name}
+                  value={@username_form[:username].value}
+                  type="text"
+                  placeholder="Enter new username"
+                  autocomplete="username"
+                  class="input min-w-xs join-item"
+                  required
+                />
+                <button type="submit" class="btn btn-primary join-item" phx-disable-with="Updating...">
+                  Update Username
+                </button>
+              </div>
+
+              <%= if @username_form[:username].errors != [] do %>
+                <div class="text-red-600 text-sm mt-1">
+                  <%= for {msg, _} <- @username_form[:username].errors do %>
+                    <p>{msg}</p>
+                  <% end %>
+                </div>
+              <% end %>
+            </div>
+          </.form>
+        </div>
+        
+    <!-- Email Update Section -->
+        <div>
+          <h2 class="text-xl font-semibold text-gray-900 mb-4">Update Email</h2>
+
+          <.form
+            for={@email_form}
+            id="email_form"
+            phx-submit="update_email"
+            phx-change="validate_email"
+          >
+            <div class="form-control">
+              <p class="label block mb-2">
+                <span class="label-text">Email</span>
               </p>
               <div class="join">
                 <input
@@ -25,7 +71,7 @@ defmodule LinksWeb.UserLive.Settings do
                   class="input min-w-xs join-item"
                   required
                 />
-                <button type="submit" class="btn btn-primary join-item" phx-disable-with="Sending...">
+                <button type="submit" class="btn btn-primary join-item" phx-disable-with="Changing...">
                   Update Email
                 </button>
               </div>
@@ -33,12 +79,14 @@ defmodule LinksWeb.UserLive.Settings do
               <%= if @email_form[:email].errors != [] do %>
                 <div class="text-red-600 text-sm mt-1">
                   <%= for {msg, _} <- @email_form[:email].errors do %>
-                    <p><%= msg %></p>
+                    <p>{msg}</p>
                   <% end %>
                 </div>
               <% end %>
             </div>
           </.form>
+        </div>
+      </div>
     </Layouts.app>
     """
   end
@@ -59,11 +107,14 @@ defmodule LinksWeb.UserLive.Settings do
   def mount(_params, _session, socket) do
     user = socket.assigns.current_scope.user
     email_changeset = Accounts.change_user_email(user, %{}, validate_email: false)
+    username_changeset = Accounts.change_user_username(user, %{}, validate_username: false)
 
     socket =
       socket
       |> assign(:current_email, user.email)
+      |> assign(:current_username, user.username)
       |> assign(:email_form, to_form(email_changeset))
+      |> assign(:username_form, to_form(username_changeset))
       |> assign(:page_title, "Settings")
 
     {:ok, socket}
@@ -79,6 +130,44 @@ defmodule LinksWeb.UserLive.Settings do
       |> to_form()
 
     {:noreply, assign(socket, email_form: email_form)}
+  end
+
+  def handle_event("validate_username", params, socket) do
+    %{"user" => user_params} = params
+
+    username_form =
+      socket.assigns.current_scope.user
+      |> Accounts.change_user_username(user_params, validate_username: false)
+      |> Map.put(:action, :validate)
+      |> to_form()
+
+    {:noreply, assign(socket, username_form: username_form)}
+  end
+
+  def handle_event("update_username", params, socket) do
+    %{"user" => user_params} = params
+    user = socket.assigns.current_scope.user
+
+    case Accounts.update_user_username(user, user_params) do
+      {:ok, updated_user} ->
+        # Update the current_scope with the new user data
+        updated_scope = Links.Accounts.Scope.for_user(updated_user)
+
+        info = "Username updated successfully to @#{updated_user.username}!"
+
+        {:noreply,
+         socket
+         |> assign(:current_scope, updated_scope)
+         |> put_flash(:info, info)
+         |> assign(:current_username, updated_user.username)
+         |> assign(
+           :username_form,
+           to_form(Accounts.change_user_username(updated_user, %{}, validate_username: false))
+         )}
+
+      {:error, changeset} ->
+        {:noreply, assign(socket, :username_form, to_form(changeset, action: :insert))}
+    end
   end
 
   def handle_event("update_email", params, socket) do

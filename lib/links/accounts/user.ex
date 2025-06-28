@@ -4,6 +4,7 @@ defmodule Links.Accounts.User do
 
   schema "users" do
     field :email, :string
+    field :username, :string
     field :password, :string, virtual: true, redact: true
     field :hashed_password, :string, redact: true
     field :confirmed_at, :utc_datetime
@@ -27,6 +28,24 @@ defmodule Links.Accounts.User do
     user
     |> cast(attrs, [:email])
     |> validate_email(opts)
+    |> maybe_generate_username()
+  end
+
+  @doc """
+  A user changeset for updating the username.
+
+  It requires the username to change otherwise an error is added.
+
+  ## Options
+
+    * `:validate_username` - Set to false if you don't want to validate the
+      uniqueness of the username, useful when displaying live validations.
+      Defaults to `true`.
+  """
+  def username_changeset(user, attrs, opts \\ []) do
+    user
+    |> cast(attrs, [:username])
+    |> validate_username(opts)
   end
 
   defp validate_email(changeset, opts) do
@@ -51,6 +70,33 @@ defmodule Links.Accounts.User do
   defp validate_email_changed(changeset) do
     if get_field(changeset, :email) && get_change(changeset, :email) == nil do
       add_error(changeset, :email, "did not change")
+    else
+      changeset
+    end
+  end
+
+  defp validate_username(changeset, opts) do
+    changeset =
+      changeset
+      |> validate_required([:username])
+      |> validate_format(:username, ~r/^[a-z0-9_]+$/,
+        message: "can only contain lowercase letters, numbers, and underscores"
+      )
+      |> validate_length(:username, min: 1, max: 50)
+
+    if Keyword.get(opts, :validate_username, true) do
+      changeset
+      |> unsafe_validate_unique(:username, Links.Repo)
+      |> unique_constraint(:username)
+      |> validate_username_changed()
+    else
+      changeset
+    end
+  end
+
+  defp validate_username_changed(changeset) do
+    if get_field(changeset, :username) && get_change(changeset, :username) == nil do
+      add_error(changeset, :username, "did not change")
     else
       changeset
     end
@@ -128,5 +174,54 @@ defmodule Links.Accounts.User do
   def valid_password?(_, _) do
     Bcrypt.no_user_verify()
     false
+  end
+
+  @doc """
+  Generates a unique username from email.
+  If username already exists, appends numbers until unique.
+  """
+  def generate_username_from_email(email) do
+    base_username = 
+      email
+      |> String.split("@")
+      |> List.first()
+      |> String.downcase()
+      |> String.replace(~r/[^a-z0-9_]/, "")
+
+    find_unique_username(base_username, 0)
+  end
+
+  defp find_unique_username(base_username, 0) do
+    if username_available?(base_username) do
+      base_username
+    else
+      find_unique_username(base_username, 1)
+    end
+  end
+
+  defp find_unique_username(base_username, suffix) do
+    candidate = "#{base_username}#{suffix}"
+    if username_available?(candidate) do
+      candidate
+    else
+      find_unique_username(base_username, suffix + 1)
+    end
+  end
+
+  defp username_available?(username) do
+    case Links.Repo.get_by(__MODULE__, username: username) do
+      nil -> true
+      _ -> false
+    end
+  end
+
+  defp maybe_generate_username(changeset) do
+    if get_change(changeset, :email) && !get_field(changeset, :username) do
+      email = get_change(changeset, :email)
+      username = generate_username_from_email(email)
+      put_change(changeset, :username, username)
+    else
+      changeset
+    end
   end
 end
