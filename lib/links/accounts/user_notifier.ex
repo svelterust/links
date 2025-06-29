@@ -6,17 +6,13 @@ defmodule Links.Accounts.UserNotifier do
 
   # Delivers the email using the application mailer with both HTML and text versions
   defp deliver(recipient, subject, html_content, text_content) do
-    email =
-      new()
-      |> to(recipient)
-      |> from({"Links", "info@links.com"})
-      |> subject(subject)
-      |> html_body(html_content)
-      |> text_body(text_content)
-
-    with {:ok, _metadata} <- Mailer.deliver(email) do
-      {:ok, email}
-    end
+    new()
+    |> to(recipient)
+    |> from({"Links", "links@myhren.ai"})
+    |> subject(subject)
+    |> html_body(html_content)
+    |> text_body(text_content)
+    |> Mailer.deliver()
   end
 
   @doc """
@@ -55,10 +51,11 @@ defmodule Links.Accounts.UserNotifier do
   Deliver instructions to login with a magic link.
   """
   def deliver_login_instructions(user, url) do
-    subject = case user do
-      %User{confirmed_at: nil} -> "Welcome! Login to Links"
-      _ -> "Your Login Link"
-    end
+    subject =
+      case user do
+        %User{confirmed_at: nil} -> "Welcome! Login to Links"
+        _ -> "Your Login Link"
+      end
 
     html_content = """
     <html>
