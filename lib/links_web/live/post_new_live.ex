@@ -13,12 +13,15 @@ defmodule LinksWeb.PostNewLive do
     changeset =
       %Post{}
       |> Posts.change_post(post_params)
+      |> Map.put(:action, :validate)
 
     {:noreply, assign(socket, :form, to_form(changeset))}
   end
 
-  def handle_event("submit_post", %{"post" => %{"url" => url}}, socket) do
-    case Posts.create_post_with_title(url, socket.assigns.current_scope.user.id) do
+  def handle_event("submit_post", %{"post" => post_params}, socket) do
+    case IO.inspect(
+           Posts.create_post_with_title(post_params["url"], socket.assigns.current_scope.user.id)
+         ) do
       {:ok, post} ->
         {:noreply,
          socket

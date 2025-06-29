@@ -457,19 +457,28 @@ defmodule Links.Posts do
         create_post(%{url: url, title: title, user_id: user_id})
 
       {:error, reason} ->
-        {:error, %Ecto.Changeset{errors: [url: {"could not fetch title: #{reason}", []}]}}
+        changeset =
+          %Post{}
+          |> change_post(%{url: url, user_id: user_id})
+          |> Ecto.Changeset.add_error(:url, "could not fetch title: #{reason}")
+          |> Map.put(:action, :insert)
+
+        {:error, changeset}
     end
   end
 
   defp get_title_from_url(url) do
     case Req.get(url) do
       {:ok, %Req.Response{status: 200, body: body}} ->
-        case Floki.find(body, "title") do
-          [title_element] ->
-            {:ok, Floki.text(title_element)}
+        document = Floki.parse_document!(body)
 
-          _ ->
-            {:error, "no title found"}
+        case Floki.find(document, "title") do
+          [title_element | _] ->
+            title = Floki.text(title_element) |> String.trim()
+            {:ok, title}
+
+          [] ->
+            {:error, "no title element found"}
         end
 
       {:ok, %Req.Response{status: status}} ->
