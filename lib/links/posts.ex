@@ -48,13 +48,13 @@ defmodule Links.Posts do
   """
   def list_posts_paginated(page \\ 1, per_page \\ 20) do
     offset = (page - 1) * per_page
-    
+
     Repo.all(
       from p in Post,
-      order_by: [desc: p.points, desc: p.inserted_at],
-      limit: ^per_page,
-      offset: ^offset,
-      preload: [:user]
+        order_by: [desc: p.points, desc: p.inserted_at],
+        limit: ^per_page,
+        offset: ^offset,
+        preload: [:user]
     )
   end
 
@@ -101,7 +101,7 @@ defmodule Links.Posts do
     Repo.get!(Post, id)
     |> Repo.preload([
       :user,
-      comments: from(c in Comment, order_by: [asc: c.inserted_at])
+      comments: from(c in Comment, order_by: [desc: c.inserted_at])
     ])
   end
 
@@ -196,7 +196,7 @@ defmodule Links.Posts do
   """
   def downvote_post(%Post{} = post) do
     new_points = max(0, post.points - 1)
-    
+
     post
     |> Post.changeset(%{points: new_points})
     |> Repo.update()
@@ -217,13 +217,13 @@ defmodule Links.Posts do
   """
   def vote_on_post(%User{} = user, %Post{} = post, vote_type) when vote_type in ["up", "down"] do
     existing_vote = get_user_vote_for_post(user.id, post.id)
-    
+
     case handle_vote(existing_vote, user, post, vote_type) do
       {:ok, _vote_result} ->
         # Recalculate points based on votes
         new_points = calculate_post_points(post.id)
         update_post(post, %{points: new_points})
-      
+
       error ->
         error
     end
@@ -309,8 +309,8 @@ defmodule Links.Posts do
   def list_comments_for_post(post_id) do
     Repo.all(
       from c in Comment,
-      where: c.link_id == ^post_id,
-      order_by: [asc: c.inserted_at]
+        where: c.link_id == ^post_id,
+        order_by: [asc: c.inserted_at]
     )
   end
 
@@ -357,7 +357,7 @@ defmodule Links.Posts do
 
   """
   def create_comment(attrs \\ %{}) do
-    result = 
+    result =
       %Comment{}
       |> Comment.create_changeset(attrs)
       |> Repo.insert()
@@ -365,23 +365,25 @@ defmodule Links.Posts do
     case result do
       {:ok, comment} ->
         update_post_comment_count(comment.link_id)
-        
+
         # Broadcast the new comment to all subscribers
         Phoenix.PubSub.broadcast(
           Links.PubSub,
           "comments:#{comment.link_id}",
           {:new_comment, comment}
         )
-        
+
         # Also broadcast post update for comment count
         updated_post = get_post!(comment.link_id)
+
         Phoenix.PubSub.broadcast(
           Links.PubSub,
           "posts",
           {:post_updated, updated_post}
         )
-        
+
         {:ok, comment}
+
       error ->
         error
     end
@@ -419,11 +421,12 @@ defmodule Links.Posts do
   """
   def delete_comment(%Comment{} = comment) do
     result = Repo.delete(comment)
-    
+
     case result do
       {:ok, deleted_comment} ->
         update_post_comment_count(deleted_comment.link_id)
         {:ok, deleted_comment}
+
       error ->
         error
     end
@@ -464,14 +467,17 @@ defmodule Links.Posts do
   end
 
   defp update_post_comment_count(post_id) do
-    count = Repo.aggregate(
-      from(c in Comment, where: c.link_id == ^post_id),
-      :count,
-      :id
-    )
+    count =
+      Repo.aggregate(
+        from(c in Comment, where: c.link_id == ^post_id),
+        :count,
+        :id
+      )
 
     case get_post(post_id) do
-      nil -> :ok
+      nil ->
+        :ok
+
       post ->
         post
         |> Post.update_comment_count_changeset(count)
