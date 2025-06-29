@@ -121,9 +121,28 @@ defmodule Links.Posts do
 
   """
   def create_post(attrs \\ %{}) do
-    %Post{}
-    |> Post.create_changeset(attrs)
-    |> Repo.insert()
+    result =
+      %Post{}
+      |> Post.create_changeset(attrs)
+      |> Repo.insert()
+
+    case result do
+      {:ok, post} ->
+        # Preload user for broadcasting
+        post_with_user = get_post!(post.id)
+        
+        # Broadcast the new post to all subscribers
+        Phoenix.PubSub.broadcast(
+          Links.PubSub,
+          "posts",
+          {:new_post, post_with_user}
+        )
+
+        {:ok, post_with_user}
+
+      error ->
+        error
+    end
   end
 
   @doc """

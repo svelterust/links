@@ -70,6 +70,29 @@ defmodule LinksWeb.HomeLive do
      |> assign(:user_votes, updated_user_votes)}
   end
 
+  def handle_info({:new_post, new_post}, socket) do
+    # Add new post to the top of the list
+    updated_posts = [new_post | socket.assigns.posts]
+    
+    # Get user vote for the new post if user is logged in
+    current_user = socket.assigns.current_scope && socket.assigns.current_scope.user
+    
+    updated_user_votes =
+      case current_user do
+        nil ->
+          socket.assigns.user_votes
+        
+        user ->
+          vote = Posts.get_user_vote_for_post(user.id, new_post.id)
+          Map.put(socket.assigns.user_votes, new_post.id, vote)
+      end
+
+    {:noreply,
+     socket
+     |> assign(:posts, updated_posts)
+     |> assign(:user_votes, updated_user_votes)}
+  end
+
   # Private functions
 
   defp get_user_votes_for_posts(nil, _posts), do: %{}
