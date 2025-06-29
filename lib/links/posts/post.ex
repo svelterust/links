@@ -5,11 +5,11 @@ defmodule Links.Posts.Post do
   schema "links" do
     field :title, :string
     field :url, :string
-    field :author, :string
     field :points, :integer, default: 0
     field :comment_count, :integer, default: 0
     field :tags, {:array, :string}, default: []
 
+    belongs_to :user, Links.Accounts.User
     has_many :comments, Links.Posts.Comment, foreign_key: :link_id
     has_many :votes, Links.Posts.Vote, foreign_key: :post_id
 
@@ -19,21 +19,23 @@ defmodule Links.Posts.Post do
   @doc false
   def changeset(post, attrs) do
     post
-    |> cast(attrs, [:title, :url, :author, :points, :comment_count, :tags])
-    |> validate_required([:title, :url, :author])
+    |> cast(attrs, [:title, :url, :user_id, :points, :comment_count, :tags])
+    |> validate_required([:title, :url, :user_id])
     |> validate_url(:url)
     |> validate_length(:title, min: 1, max: 255)
     |> unique_constraint(:url)
+    |> foreign_key_constraint(:user_id)
   end
 
   @doc false
   def create_changeset(post, attrs) do
     post
-    |> cast(attrs, [:title, :url, :author, :tags])
-    |> validate_required([:title, :url, :author])
+    |> cast(attrs, [:title, :url, :user_id, :tags])
+    |> validate_required([:title, :url, :user_id])
     |> validate_url(:url)
     |> validate_length(:title, min: 1, max: 255)
     |> unique_constraint(:url)
+    |> foreign_key_constraint(:user_id)
     |> put_change(:points, 0)
     |> put_change(:comment_count, 0)
   end

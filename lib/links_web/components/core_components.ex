@@ -531,7 +531,7 @@ defmodule LinksWeb.CoreComponents do
             </h3>
 
             <div class="mt-2 flex items-center space-x-4 text-sm text-gray-500">
-              <span>by {@post.author}</span>
+              <span>by {@post.user.username}</span>
               <span>{format_time_ago(@post.inserted_at)}</span>
               <.link navigate={~p"/posts/#{@post.id}"} class="hover:text-gray-700 transition-colors">
                 <span>{@post.comment_count} comments</span>

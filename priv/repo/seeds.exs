@@ -23,21 +23,39 @@ Repo.delete_all(Post)
 Repo.delete_all(User)
 
 # Create test users
-_user1 = Repo.insert!(%User{
+user1 = Repo.insert!(%User{
   email: "alice@example.com",
   username: "alice",
   confirmed_at: DateTime.utc_now() |> DateTime.truncate(:second)
 })
 
-_user2 = Repo.insert!(%User{
+user2 = Repo.insert!(%User{
   email: "bob@example.com", 
   username: "bob",
   confirmed_at: DateTime.utc_now() |> DateTime.truncate(:second)
 })
 
-_user3 = Repo.insert!(%User{
+user3 = Repo.insert!(%User{
   email: "charlie@example.com",
   username: "charlie",
+  confirmed_at: DateTime.utc_now() |> DateTime.truncate(:second)
+})
+
+user4 = Repo.insert!(%User{
+  email: "chris@example.com",
+  username: "chrismccord",
+  confirmed_at: DateTime.utc_now() |> DateTime.truncate(:second)
+})
+
+user5 = Repo.insert!(%User{
+  email: "jose@example.com",
+  username: "josevalim",
+  confirmed_at: DateTime.utc_now() |> DateTime.truncate(:second)
+})
+
+user6 = Repo.insert!(%User{
+  email: "dev@example.com",
+  username: "phoenix_dev",
   confirmed_at: DateTime.utc_now() |> DateTime.truncate(:second)
 })
 
@@ -45,7 +63,7 @@ _user3 = Repo.insert!(%User{
 post1 = Repo.insert!(%Post{
   title: "Phoenix LiveView 1.0 Released",
   url: "https://phoenixframework.org/blog/phoenix-liveview-1-0-released",
-  author: "chrismccord",
+  user_id: user4.id,
   points: 0,
   comment_count: 3,
   tags: ["elixir", "phoenix", "web"]
@@ -54,7 +72,7 @@ post1 = Repo.insert!(%Post{
 post2 = Repo.insert!(%Post{
   title: "Building Real-time Applications with Elixir and Phoenix",
   url: "https://example.com/realtime-elixir",
-  author: "josevalim",
+  user_id: user5.id,
   points: 0,
   comment_count: 2,
   tags: ["elixir", "real-time"]
@@ -63,7 +81,7 @@ post2 = Repo.insert!(%Post{
 post3 = Repo.insert!(%Post{
   title: "The Future of Functional Programming",
   url: "https://example.com/functional-programming-future",
-  author: "functional_fan",
+  user_id: user1.id,
   points: 0,
   comment_count: 1,
   tags: ["programming", "functional"]
@@ -72,7 +90,7 @@ post3 = Repo.insert!(%Post{
 post4 = Repo.insert!(%Post{
   title: "Distributed Systems in Elixir: A Complete Guide",
   url: "https://example.com/distributed-elixir",
-  author: "distributed_dev",
+  user_id: user2.id,
   points: 0,
   comment_count: 1,
   tags: ["elixir", "distributed", "guide"]
@@ -81,7 +99,7 @@ post4 = Repo.insert!(%Post{
 post5 = Repo.insert!(%Post{
   title: "Why I Chose Elixir for My Startup",
   url: "https://example.com/elixir-startup",
-  author: "startup_founder",
+  user_id: user3.id,
   points: 0,
   comment_count: 1,
   tags: ["elixir", "startup", "business"]
@@ -90,7 +108,7 @@ post5 = Repo.insert!(%Post{
 post6 = Repo.insert!(%Post{
   title: "GenServer Patterns and Best Practices",
   url: "https://example.com/genserver-patterns",
-  author: "elixir_expert",
+  user_id: user1.id,
   points: 0,
   comment_count: 1,
   tags: ["elixir", "genserver", "patterns"]
@@ -99,7 +117,7 @@ post6 = Repo.insert!(%Post{
 post7 = Repo.insert!(%Post{
   title: "Building a Link Aggregator with Phoenix LiveView",
   url: "https://example.com/link-aggregator-liveview",
-  author: "phoenix_dev",
+  user_id: user6.id,
   points: 0,
   comment_count: 1,
   tags: ["phoenix", "liveview", "tutorial"]
@@ -108,7 +126,7 @@ post7 = Repo.insert!(%Post{
 post8 = Repo.insert!(%Post{
   title: "Elixir Performance Tips and Tricks",
   url: "https://example.com/elixir-performance",
-  author: "performance_guru",
+  user_id: user2.id,
   points: 0,
   comment_count: 1,
   tags: ["elixir", "performance", "optimization"]

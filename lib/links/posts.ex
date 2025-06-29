@@ -21,7 +21,7 @@ defmodule Links.Posts do
 
   """
   def list_posts do
-    Repo.all(from p in Post, order_by: [desc: p.inserted_at])
+    Repo.all(from p in Post, order_by: [desc: p.inserted_at], preload: [:user])
   end
 
   @doc """
@@ -34,7 +34,7 @@ defmodule Links.Posts do
 
   """
   def list_posts_by_points do
-    Repo.all(from p in Post, order_by: [desc: p.points, desc: p.inserted_at])
+    Repo.all(from p in Post, order_by: [desc: p.points, desc: p.inserted_at], preload: [:user])
   end
 
   @doc """
@@ -53,7 +53,8 @@ defmodule Links.Posts do
       from p in Post,
       order_by: [desc: p.points, desc: p.inserted_at],
       limit: ^per_page,
-      offset: ^offset
+      offset: ^offset,
+      preload: [:user]
     )
   end
 
@@ -71,7 +72,7 @@ defmodule Links.Posts do
       ** (Ecto.NoResultsError)
 
   """
-  def get_post!(id), do: Repo.get!(Post, id)
+  def get_post!(id), do: Repo.get!(Post, id) |> Repo.preload(:user)
 
   @doc """
   Gets a single post.
@@ -85,7 +86,7 @@ defmodule Links.Posts do
       nil
 
   """
-  def get_post(id), do: Repo.get(Post, id)
+  def get_post(id), do: Repo.get(Post, id) |> Repo.preload(:user)
 
   @doc """
   Gets a single post with comments preloaded.
@@ -98,7 +99,10 @@ defmodule Links.Posts do
   """
   def get_post_with_comments!(id) do
     Repo.get!(Post, id)
-    |> Repo.preload(comments: from(c in Comment, order_by: [asc: c.inserted_at]))
+    |> Repo.preload([
+      :user,
+      comments: from(c in Comment, order_by: [asc: c.inserted_at])
+    ])
   end
 
   @doc """
@@ -361,6 +365,22 @@ defmodule Links.Posts do
     case result do
       {:ok, comment} ->
         update_post_comment_count(comment.link_id)
+        
+        # Broadcast the new comment to all subscribers
+        Phoenix.PubSub.broadcast(
+          Links.PubSub,
+          "comments:#{comment.link_id}",
+          {:new_comment, comment}
+        )
+        
+        # Also broadcast post update for comment count
+        updated_post = get_post!(comment.link_id)
+        Phoenix.PubSub.broadcast(
+          Links.PubSub,
+          "posts",
+          {:post_updated, updated_post}
+        )
+        
         {:ok, comment}
       error ->
         error
