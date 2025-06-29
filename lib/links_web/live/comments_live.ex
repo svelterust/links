@@ -26,7 +26,7 @@ defmodule LinksWeb.CommentsLive do
     {:ok,
      socket
      |> assign(:post, post)
-     |> assign(:changeset, changeset)
+     |> assign(:form, to_form(changeset))
      |> assign(:comments, post.comments)
      |> assign(:current_user, current_user)
      |> assign(:user_vote, user_vote)
@@ -34,12 +34,14 @@ defmodule LinksWeb.CommentsLive do
   end
 
   def handle_event("validate", %{"comment" => comment_params}, socket) do
+    comment_params = Map.put(comment_params, "link_id", socket.assigns.post.id)
+
     changeset =
       %Posts.Comment{}
       |> Posts.change_comment(comment_params)
       |> Map.put(:action, :validate)
 
-    {:noreply, assign(socket, :changeset, changeset)}
+    {:noreply, assign(socket, :form, to_form(changeset))}
   end
 
   def handle_event("save", %{"comment" => comment_params}, socket) do
@@ -65,11 +67,11 @@ defmodule LinksWeb.CommentsLive do
 
         {:noreply,
          socket
-         |> assign(:changeset, changeset)
+         |> assign(:form, to_form(changeset))
          |> put_flash(:info, "Comment posted successfully!")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply, assign(socket, :changeset, changeset)}
+        {:noreply, assign(socket, :form, to_form(changeset))}
     end
   end
 
@@ -126,6 +128,8 @@ defmodule LinksWeb.CommentsLive do
   end
 
   # Private functions
+  defp get_user_vote_for_post(nil, _post_id), do: nil
+
   defp get_user_vote_for_post(user, post_id) do
     Posts.get_user_vote_for_post(user.id, post_id)
   end

@@ -19,11 +19,9 @@ defmodule LinksWeb.UserSessionController do
         UserAuth.disconnect_sessions(tokens_to_disconnect)
 
         # Always remember users by setting remember_me to true
-        user_params_with_remember = Map.put(user_params, "remember_me", "true")
-
         conn
         |> put_flash(:info, info)
-        |> UserAuth.log_in_user(user, user_params_with_remember)
+        |> UserAuth.log_in_user(user, user_params |> Map.put("remember_me", "true"))
 
       _ ->
         conn
@@ -31,8 +29,6 @@ defmodule LinksWeb.UserSessionController do
         |> redirect(to: ~p"/login")
     end
   end
-
-
 
   def magic_link_login(conn, %{"token" => token}) do
     case Accounts.login_user_by_magic_link(token) do

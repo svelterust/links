@@ -102,6 +102,7 @@
 }
 
 /* This file is for your main application CSS */
-input {
+input,
+textarea {
     @apply bg-white;
 }

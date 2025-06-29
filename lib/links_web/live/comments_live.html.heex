@@ -5,62 +5,59 @@
   </div>
   
 <!-- Comments List -->
-  <div class="space-y-6">
-    <h2 class="text-xl font-semibold text-gray-900">
-      Comments ({length(@comments)})
-    </h2>
-    
+  <h2 class="text-xl font-semibold text-gray-900 mb-2">
+    Comments ({length(@comments)})
+  </h2>
+  
 <!-- Comment Form -->
-    <%= if @current_user do %>
-      <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
-        <.form for={@changeset} phx-change="validate" phx-submit="save" class="space-y-4">
-          <%= if !@current_user do %>
-            <div>
-              <.input
-                field={@changeset[:author]}
-                type="text"
-                label="Name"
-                placeholder="Enter your name"
-                required
-              />
-            </div>
-          <% end %>
+  <%= if @current_user do %>
+    <.form for={@form} phx-change="validate" phx-submit="save" class="space-y-4">
+      <%= if !@current_user do %>
+        <div>
+          <.input
+            field={@form[:author]}
+            type="text"
+            label="Name"
+            placeholder="Enter your name"
+            required
+          />
+        </div>
+      <% end %>
 
-          <div>
-            <.input
-              field={@changeset[:content]}
-              type="textarea"
-              label="Comment"
-              placeholder="Write your comment here..."
-              rows="4"
-              required
-            />
-          </div>
+      <div>
+        <.input
+          field={@form[:content]}
+          type="textarea"
+          label="Comment"
+          placeholder="Write your comment here..."
+          rows="4"
+          required
+        />
+      </div>
 
-          <div class="flex justify-end">
-            <button
-              type="submit"
-              class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={!@changeset.valid?}
-            >
-              <.icon name="hero-paper-airplane" class="w-4 h-4 mr-2" /> Submit Comment
-            </button>
-          </div>
-        </.form>
+      <div class="flex justify-end">
+        <button
+          type="submit"
+          class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <.icon name="hero-paper-airplane" class="w-4 h-4 mr-2" /> Submit Comment
+        </button>
       </div>
-    <% else %>
-      <div class="bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">
-        <p class="text-gray-600 mb-2">Please log in to post a comment</p>
-      </div>
-    <% end %>
+    </.form>
+  <% else %>
+    <div class="bg-gray-50 rounded-lg p-4 border border-gray-200 text-center mt-4">
+      <p class="text-gray-600 mb-2">Please log in to post a comment</p>
+    </div>
+  <% end %>
 
-    <%= if Enum.empty?(@comments) do %>
-      <div class="text-center py-8 text-gray-500">
-        <.icon name="hero-chat-bubble-left-ellipsis" class="w-8 h-8 mx-auto mb-2 text-gray-300" />
-        <p>No comments yet</p>
-        <p class="text-sm">Be the first to start the conversation!</p>
-      </div>
-    <% else %>
+  <%= if Enum.empty?(@comments) do %>
+    <div class="text-center py-8 text-gray-500">
+      <.icon name="hero-chat-bubble-left-ellipsis" class="w-8 h-8 mx-auto mb-2 text-gray-300" />
+      <p>No comments yet</p>
+      <p class="text-sm">Be the first to start the conversation!</p>
+    </div>
+  <% else %>
+    <div class="mt-6 space-y-6">
       <%= for comment <- @comments do %>
         <article>
           <div class="flex items-start space-x-3">
@@ -83,6 +80,6 @@
           </div>
         </article>
       <% end %>
-    <% end %>
-  </div>
+    </div>
+  <% end %>
 </Layouts.app>
