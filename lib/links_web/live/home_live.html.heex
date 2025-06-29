@@ -1,11 +1,15 @@
 <Layouts.app flash={@flash} current_scope={@current_scope}>
   <div class="space-y-4">
-    <%= for post <- @posts do %>
-      <.post_card 
-        post={post} 
-        current_user={@current_user}
-        user_vote={Map.get(@user_votes, post.id)}
-      />
+    <%= if Enum.empty?(@posts) do %>
+      <p class="text-gray-500">No posts yet. Be the first to share a link!</p>
+    <% else %>
+      <%= for post <- @posts do %>
+        <.post_card 
+          post={post} 
+          current_user={@current_user}
+          user_vote={Map.get(@user_votes, post.id)}
+        />
+      <% end %>
     <% end %>
   </div>
 </Layouts.app>

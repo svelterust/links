@@ -39,14 +39,14 @@ defmodule LinksWeb.Layouts do
         <nav class="flex space-x-6 items-center">
           <%= if @current_scope do %>
             <.link navigate={~p"/new"} class="text-gray-600 hover:text-black transition-colors">
-                New
+              New Post
             </.link>
             <.link
               navigate={~p"/log-out"}
               method="delete"
               class="text-gray-600 hover:text-black transition-colors"
             >
-              Log out
+              Log Out
             </.link>
             <.link navigate={~p"/settings"} class="btn">@{@current_scope.user.username}</.link>
           <% else %>

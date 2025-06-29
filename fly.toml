@@ -1,0 +1,33 @@
+app = "links-polished-darkness"
+primary_region = "fra"
+kill_signal = "SIGTERM"
+
+[env]
+PORT = "8080"
+PHX_HOST = "links-polished-darkness.fly.dev"
+DATABASE_PATH = "/app/database/links.db"
+
+[[mounts]]
+source = "database"
+destination = "/app/database"
+auto_extend_size_threshold = 80
+auto_extend_size_increment = "1GB"
+auto_extend_size_limit = "10GB"
+
+[http_service]
+internal_port = 8080
+force_https = true
+auto_stop_machines = "suspend"
+auto_start_machines = true
+min_machines_running = 0
+processes = ["app"]
+
+[http_service.concurrency]
+type = "connections"
+hard_limit = 1000
+soft_limit = 1000
+
+[[vm]]
+memory = "512mb"
+cpu_kind = "shared"
+cpus = 1

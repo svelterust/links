@@ -7,6 +7,9 @@ defmodule Links.Application do
 
   @impl true
   def start(_type, _args) do
+    # Run migrations
+    Links.Release.migrate()
+
     children = [
       LinksWeb.Telemetry,
       Links.Repo,
