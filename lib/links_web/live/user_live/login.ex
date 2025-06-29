@@ -71,10 +71,11 @@ defmodule LinksWeb.UserLive.Login do
       end
 
     if user do
-      Accounts.deliver_login_instructions(
-        user,
-        &url(~p"/login/#{&1}")
-      )
+      {:ok, _} =
+        Accounts.deliver_login_instructions(
+          user,
+          &url(~p"/login/#{&1}")
+        )
     end
 
     {:noreply,
