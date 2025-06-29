@@ -1,0 +1,6 @@
+<Layouts.app flash={@flash}>
+  <.form for={@form} id="post-form" phx-submit="submit_post" phx-change="validate_post">
+    <.input field={@form[:url]} type="url" label="URL" placeholder="https://example.com" />
+    <.button phx-disable-with="Submitting...">Submit</.button>
+  </.form>
+</Layouts.app>

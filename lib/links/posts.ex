@@ -10,6 +10,9 @@ defmodule Links.Posts do
   alias Links.Posts.Comment
   alias Links.Posts.Vote
   alias Links.Accounts.User
+  alias Req
+  alias Floki
+  require Floki
 
   @doc """
   Returns the list of posts.
@@ -443,6 +446,38 @@ defmodule Links.Posts do
   """
   def change_comment(%Comment{} = comment, attrs \\ %{}) do
     Comment.changeset(comment, attrs)
+  end
+
+  @doc """
+  Creates a post by fetching the title from the given URL.
+  """
+  def create_post_with_title(url, user_id) do
+    case get_title_from_url(url) do
+      {:ok, title} ->
+        create_post(%{url: url, title: title, user_id: user_id})
+
+      {:error, reason} ->
+        {:error, %Ecto.Changeset{errors: [url: {"could not fetch title: #{reason}", []}]}}
+    end
+  end
+
+  defp get_title_from_url(url) do
+    case Req.get(url) do
+      {:ok, %Req.Response{status: 200, body: body}} ->
+        case Floki.find(body, "title") do
+          [title_element] ->
+            {:ok, Floki.text(title_element)}
+
+          _ ->
+            {:error, "no title found"}
+        end
+
+      {:ok, %Req.Response{status: status}} ->
+        {:error, "HTTP status #{status}"}
+
+      {:error, reason} ->
+        {:error, "network error: #{inspect(reason)}"}
+    end
   end
 
   # Private functions

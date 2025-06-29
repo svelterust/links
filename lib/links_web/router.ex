@@ -27,22 +27,14 @@ defmodule LinksWeb.Router do
     end
   end
 
-  # Enable Swoosh mailbox preview in development
-  if Application.compile_env(:links, :dev_routes) do
-    scope "/" do
-      pipe_through :browser
-
-      forward "/mailbox", Plug.Swoosh.MailboxPreview
-    end
-  end
-
   scope "/", LinksWeb do
     pipe_through [:browser, :require_authenticated_user]
 
     live_session :require_authenticated_user,
-      on_mount: [{LinksWeb.UserAuth, :require_authenticated}] do
-      live "/settings", UserLive.Settings, :edit
-      live "/settings/confirm-email/:token", UserLive.Settings, :confirm_email
+      on_mount: [ {LinksWeb.UserAuth, :require_authenticated}] do
+      live "/settings", UserLive.Settings
+      live "/settings/confirm-email/:token", UserLive.Settings
+      live "/new", PostNewLive
     end
   end
 
@@ -57,5 +49,14 @@ defmodule LinksWeb.Router do
     post "/login", UserSessionController, :create
     get "/login/:token", UserSessionController, :magic_link_login
     get "/log-out", UserSessionController, :delete
+  end
+
+  # Enable Swoosh mailbox preview in development
+  if Application.compile_env(:links, :dev_routes) do
+    scope "/" do
+      pipe_through :browser
+
+      forward "/mailbox", Plug.Swoosh.MailboxPreview
+    end
   end
 end

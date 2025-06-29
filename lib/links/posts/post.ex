@@ -20,7 +20,7 @@ defmodule Links.Posts.Post do
   def changeset(post, attrs) do
     post
     |> cast(attrs, [:title, :url, :user_id, :points, :comment_count, :tags])
-    |> validate_required([:title, :url, :user_id])
+    |> validate_required([:url, :user_id])
     |> validate_url(:url)
     |> validate_length(:title, min: 1, max: 255)
     |> unique_constraint(:url)
@@ -31,7 +31,7 @@ defmodule Links.Posts.Post do
   def create_changeset(post, attrs) do
     post
     |> cast(attrs, [:title, :url, :user_id, :tags])
-    |> validate_required([:title, :url, :user_id])
+    |> validate_required([:url, :user_id])
     |> validate_url(:url)
     |> validate_length(:title, min: 1, max: 255)
     |> unique_constraint(:url)
