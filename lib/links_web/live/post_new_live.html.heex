@@ -1,6 +1,25 @@
-<Layouts.app flash={@flash}>
+<Layouts.app flash={@flash} current_scope={@current_scope}>
+  <p class="text-gray-600 mb-4">
+    Enter the URL of the link you want to share.
+  </p>
+
   <.form for={@form} id="post-form" phx-submit="submit_post" phx-change="validate_post">
-    <.input field={@form[:url]} type="url" label="URL" placeholder="https://example.com" />
-    <.button phx-disable-with="Submitting...">Submit</.button>
+    <div class="form-control">
+      <p class="label block mb-2">
+        <span class="label-text">URL</span>
+      </p>
+      <div class="join">
+        <input
+          name={@form[:url].name}
+          value={@form[:url].value}
+          type="url"
+          placeholder="https://example.com"
+          class="input min-w-xs join-item"
+        />
+        <button phx-disable-with="Submitting..." class="btn btn-primary join-item">
+          Submit
+        </button>
+      </div>
+    </div>
   </.form>
 </Layouts.app>

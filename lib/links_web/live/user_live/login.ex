@@ -15,7 +15,7 @@ defmodule LinksWeb.UserLive.Login do
           Login with your email address. If you don't have an account, it will automatically be created for you.
         </p>
 
-        <.form :let={f} for={@form} id="login_form" action={~p"/login"} phx-submit="submit_magic">
+        <.form for={@form} id="login_form" action={~p"/login"} phx-submit="submit_magic">
           <div class="form-control">
             <p class="label block mb-2">
               <span class="label-text">Email</span>
@@ -23,8 +23,8 @@ defmodule LinksWeb.UserLive.Login do
             <div class="join">
               <input
                 readonly={!!@current_scope}
-                name={f[:email].name}
-                value={f[:email].value}
+                name={@form[:email].name}
+                value={@form[:email].value}
                 type="email"
                 placeholder="Enter your email"
                 autocomplete="email"

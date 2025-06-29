@@ -31,10 +31,10 @@ defmodule LinksWeb.Router do
     pipe_through [:browser, :require_authenticated_user]
 
     live_session :require_authenticated_user,
-      on_mount: [ {LinksWeb.UserAuth, :require_authenticated}] do
+      on_mount: [{LinksWeb.UserAuth, :require_authenticated}] do
+      live "/new", PostNewLive
       live "/settings", UserLive.Settings
       live "/settings/confirm-email/:token", UserLive.Settings
-      live "/new", PostNewLive
     end
   end
 

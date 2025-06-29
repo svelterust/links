@@ -18,7 +18,7 @@ defmodule LinksWeb.PostNewLive do
   end
 
   def handle_event("submit_post", %{"post" => %{"url" => url}}, socket) do
-    case Posts.create_post_with_title(url, socket.assigns.current_user.id) do
+    case Posts.create_post_with_title(url, socket.assigns.current_scope.user.id) do
       {:ok, post} ->
         {:noreply,
          socket
