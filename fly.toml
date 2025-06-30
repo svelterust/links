@@ -4,7 +4,7 @@ kill_signal = "SIGTERM"
 
 [env]
 PORT = "8080"
-PHX_HOST = "links-polished-darkness.fly.dev"
+PHX_HOST = "links.myhren.ai"
 DATABASE_PATH = "/app/database/links.db"
 
 [[mounts]]

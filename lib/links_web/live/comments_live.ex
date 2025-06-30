@@ -75,6 +75,30 @@ defmodule LinksWeb.CommentsLive do
     end
   end
 
+  def handle_event("delete_comment", %{"comment_id" => comment_id}, socket) do
+    current_user = socket.assigns.current_scope && socket.assigns.current_scope.user
+
+    case current_user do
+      nil ->
+        {:noreply, put_flash(socket, :error, "You must be logged in to delete comments")}
+
+      user ->
+        comment = Posts.get_comment!(comment_id)
+
+        if comment.author == user.username do
+          case Posts.delete_comment(comment) do
+            {:ok, _deleted_comment} ->
+              {:noreply, put_flash(socket, :info, "Comment deleted successfully")}
+
+            {:error, _changeset} ->
+              {:noreply, put_flash(socket, :error, "Unable to delete this comment")}
+          end
+        else
+          {:noreply, put_flash(socket, :error, "You can only delete your own comments")}
+        end
+    end
+  end
+
   def handle_event("vote", %{"post_id" => post_id, "type" => vote_type}, socket) do
     current_user = socket.assigns.current_scope && socket.assigns.current_scope.user
 
@@ -119,6 +143,16 @@ defmodule LinksWeb.CommentsLive do
 
   def handle_info({:new_comment, _comment}, socket) do
     # Reload the post with updated comments when a new comment is added
+    post = Posts.get_post_with_comments!(socket.assigns.post.id)
+
+    {:noreply,
+     socket
+     |> assign(:post, post)
+     |> assign(:comments, post.comments)}
+  end
+
+  def handle_info({:comment_deleted, _comment}, socket) do
+    # Reload the post with updated comments when a comment is deleted
     post = Posts.get_post_with_comments!(socket.assigns.post.id)
 
     {:noreply,

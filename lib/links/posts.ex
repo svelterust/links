@@ -176,7 +176,21 @@ defmodule Links.Posts do
 
   """
   def delete_post(%Post{} = post) do
-    Repo.delete(post)
+    result = Repo.delete(post)
+
+    case result do
+      {:ok, deleted_post} ->
+        Phoenix.PubSub.broadcast(
+          Links.PubSub,
+          "posts",
+          {:post_deleted, deleted_post}
+        )
+
+        {:ok, deleted_post}
+
+      error ->
+        error
+    end
   end
 
   @doc """
@@ -447,6 +461,20 @@ defmodule Links.Posts do
     case result do
       {:ok, deleted_comment} ->
         update_post_comment_count(deleted_comment.link_id)
+
+        Phoenix.PubSub.broadcast(
+          Links.PubSub,
+          "comments:#{deleted_comment.link_id}",
+          {:comment_deleted, deleted_comment}
+        )
+
+        updated_post = get_post!(deleted_comment.link_id)
+        Phoenix.PubSub.broadcast(
+          Links.PubSub,
+          "posts",
+          {:post_updated, updated_post}
+        )
+
         {:ok, deleted_comment}
 
       error ->

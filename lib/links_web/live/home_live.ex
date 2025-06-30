@@ -20,6 +20,30 @@ defmodule LinksWeb.HomeLive do
      |> assign(:page_title, "Home")}
   end
 
+  def handle_event("delete_post", %{"post_id" => post_id}, socket) do
+    current_user = socket.assigns.current_scope && socket.assigns.current_scope.user
+
+    case current_user do
+      nil ->
+        {:noreply, put_flash(socket, :error, "You must be logged in to delete posts")}
+
+      user ->
+        post = Posts.get_post!(post_id)
+
+        if post.user_id == user.id do
+          case Posts.delete_post(post) do
+            {:ok, _deleted_post} ->
+              {:noreply, put_flash(socket, :info, "Post deleted successfully")}
+
+            {:error, _changeset} ->
+              {:noreply, put_flash(socket, :error, "Unable to delete this post")}
+          end
+        else
+          {:noreply, put_flash(socket, :error, "You can only delete your own posts")}
+        end
+    end
+  end
+
   def handle_event("vote", %{"post_id" => post_id, "type" => vote_type}, socket) do
     current_user = socket.assigns.current_scope && socket.assigns.current_scope.user
 
@@ -86,6 +110,19 @@ defmodule LinksWeb.HomeLive do
           vote = Posts.get_user_vote_for_post(user.id, new_post.id)
           Map.put(socket.assigns.user_votes, new_post.id, vote)
       end
+
+    {:noreply,
+     socket
+     |> assign(:posts, updated_posts)
+     |> assign(:user_votes, updated_user_votes)}
+  end
+
+  def handle_info({:post_deleted, deleted_post}, socket) do
+    # Remove the deleted post from the list
+    updated_posts = Enum.reject(socket.assigns.posts, &(&1.id == deleted_post.id))
+    
+    # Remove the user vote for the deleted post
+    updated_user_votes = Map.delete(socket.assigns.user_votes, deleted_post.id)
 
     {:noreply,
      socket

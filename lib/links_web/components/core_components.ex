@@ -27,6 +27,7 @@ defmodule LinksWeb.CoreComponents do
 
   """
   use Phoenix.Component
+  alias Phoenix.LiveView.JS
 
   use Phoenix.VerifiedRoutes,
     endpoint: LinksWeb.Endpoint,
@@ -501,16 +502,16 @@ defmodule LinksWeb.CoreComponents do
           <.icon name="hero-chevron-up" class="w-4 h-4" />
         </button>
         <span class="text-sm font-medium text-gray-900">{@post.points}</span>
-        <button 
-          phx-click="vote" 
-          phx-value-post_id={@post.id} 
+        <button
+          phx-click="vote"
+          phx-value-post_id={@post.id}
           phx-value-type="down"
           class={[
             "transition-all duration-200 ease-in-out transform hover:scale-110 active:scale-95",
             if(@current_user == nil,
               do: "text-gray-300 cursor-not-allowed",
-              else: if(@user_vote && @user_vote.type == "down", 
-                do: "text-orange-500 cursor-pointer", 
+              else: if(@user_vote && @user_vote.type == "down",
+                do: "text-orange-500 cursor-pointer",
                 else: "text-gray-400 hover:text-orange-500 cursor-pointer"))
           ]}
           disabled={@current_user == nil}
@@ -536,6 +537,32 @@ defmodule LinksWeb.CoreComponents do
               <.link navigate={~p"/posts/#{@post.id}"} class="hover:text-gray-700 transition-colors">
                 <span>{@post.comment_count} comments</span>
               </.link>
+              <%= if @current_user && @current_user.id == @post.user_id do %>
+                <label for={"delete_post_modal_#{@post.id}"} class="text-red-500 hover:text-red-700 transition-colors cursor-pointer" title="Delete post">
+                  <.icon name="hero-trash" class="w-4 h-4" />
+                </label>
+
+                <!-- Delete Post Modal -->
+                <input type="checkbox" id={"delete_post_modal_#{@post.id}"} class="modal-toggle" />
+                <div class="modal" role="dialog">
+                  <div class="modal-box">
+                    <h3 class="text-lg font-bold">Confirm Delete</h3>
+                    <p class="py-4">Are you sure you want to delete this post? This action cannot be undone.</p>
+                    <div class="modal-action">
+                      <label for={"delete_post_modal_#{@post.id}"} class="btn btn-ghost cursor-pointer">Cancel</label>
+                      <button
+                        phx-click="delete_post"
+                        phx-value-post_id={@post.id}
+                        class="btn btn-error cursor-pointer"
+                        onclick={"document.getElementById('delete_post_modal_#{@post.id}').checked = false"}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                  <label class="modal-backdrop" for={"delete_post_modal_#{@post.id}"}></label>
+                </div>
+              <% end %>
               <div class="flex space-x-2">
                 <%= for tag <- @post.tags do %>
                   <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
