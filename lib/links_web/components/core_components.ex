@@ -586,6 +586,160 @@ defmodule LinksWeb.CoreComponents do
     end
   end
 
+  @doc """
+  Renders a comment thread with nested replies.
+
+  ## Examples
+
+      <.comment_thread comment={@comment} current_user={@user} reply_forms={@reply_forms} show_reply_form={@show_reply_form} depth={0} />
+  """
+  attr :comment, :map, required: true
+  attr :current_user, :map, default: nil
+  attr :reply_forms, :map, required: true
+  attr :show_reply_form, :any, default: nil
+  attr :depth, :integer, default: 0
+
+  def comment_thread(assigns) do
+    margin_class = case assigns.depth do
+      0 -> ""
+      1 -> "ml-6"
+      2 -> "ml-12"
+      3 -> "ml-18"
+      4 -> "ml-24"
+      5 -> "ml-30"
+      _ -> "ml-36"
+    end
+    
+    assigns = assign(assigns, :margin_class, margin_class)
+    
+    ~H"""
+    <article class={@margin_class}>
+      <div class="flex items-start space-x-3">
+        <div class="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center">
+          <span class="text-xs font-medium text-gray-700">
+            {String.first(@comment.author) |> String.upcase()}
+          </span>
+        </div>
+
+        <div class="flex-1">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <span class="text-sm font-medium text-gray-900">{@comment.author}</span>
+              <span class="text-xs text-gray-500">
+                {format_time_ago(@comment.inserted_at)}
+              </span>
+              <%= if @current_user do %>
+                <button
+                  phx-click="show_reply_form"
+                  phx-value-comment_id={@comment.id}
+                  class="text-xs text-blue-600 hover:text-blue-800 cursor-pointer"
+                >
+                  reply
+                </button>
+              <% end %>
+              <%= if @current_user && @current_user.username == @comment.author do %>
+                <label
+                  for={"delete_comment_modal_#{@comment.id}"}
+                  class="text-red-500 hover:text-red-700 transition-colors cursor-pointer"
+                  title="Delete comment"
+                >
+                  <.icon name="hero-trash" class="w-4 h-4" />
+                </label>
+              <% end %>
+            </div>
+          </div>
+
+          <div class="text-sm text-gray-700 mt-2">
+            {@comment.content}
+          </div>
+
+          <!-- Reply Form -->
+          <%= if @show_reply_form == @comment.id && Map.has_key?(@reply_forms, @comment.id) do %>
+            <div class="mt-4 ml-4">
+              <.form 
+                for={Map.get(@reply_forms, @comment.id)} 
+                phx-change="validate_reply" 
+                phx-submit="save_reply"
+                phx-value-comment_id={@comment.id}
+                class="space-y-3"
+                id={"reply-form-#{@comment.id}"}
+              >
+                <div>
+                  <.input
+                    field={Map.get(@reply_forms, @comment.id)[:content]}
+                    type="textarea"
+                    placeholder="Write your reply here..."
+                    rows="3"
+                    required
+                    id={"reply-content-#{@comment.id}"}
+                  />
+                </div>
+
+                <div class="flex justify-end space-x-2">
+                  <button 
+                    type="button"
+                    phx-click="hide_reply_form"
+                    phx-value-comment_id={@comment.id}
+                    class="btn btn-ghost btn-sm cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" class="btn btn-primary btn-sm cursor-pointer">
+                    Reply
+                  </button>
+                </div>
+              </.form>
+            </div>
+          <% end %>
+        </div>
+      </div>
+
+      <!-- Delete Comment Modal -->
+      <%= if @current_user && @current_user.username == @comment.author do %>
+        <input type="checkbox" id={"delete_comment_modal_#{@comment.id}"} class="modal-toggle" />
+        <div class="modal" role="dialog">
+          <div class="modal-box">
+            <h3 class="text-lg font-bold">Confirm Delete</h3>
+            <p class="py-4">
+              Are you sure you want to delete this comment? This action cannot be undone.
+            </p>
+            <div class="modal-action">
+              <label
+                for={"delete_comment_modal_#{@comment.id}"}
+                class="btn btn-ghost cursor-pointer"
+              >
+                Cancel
+              </label>
+              <button
+                phx-click="delete_comment"
+                phx-value-comment_id={@comment.id}
+                class="btn btn-error cursor-pointer"
+                onclick={"document.getElementById('delete_comment_modal_#{@comment.id}').checked = false"}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+          <label class="modal-backdrop" for={"delete_comment_modal_#{@comment.id}"}></label>
+        </div>
+      <% end %>
+
+      <!-- Nested Replies -->
+      <%= for reply <- @comment.replies do %>
+        <div class="mt-4">
+          <.comment_thread 
+            comment={reply} 
+            current_user={@current_user}
+            reply_forms={@reply_forms}
+            show_reply_form={@show_reply_form}
+            depth={@depth + 1}
+          />
+        </div>
+      <% end %>
+    </article>
+    """
+  end
+
   def format_time_ago(datetime) do
     now = DateTime.utc_now()
 

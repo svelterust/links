@@ -30,7 +30,20 @@ defmodule LinksWeb.CommentsLive do
      |> assign(:comments, post.comments)
      |> assign(:current_user, current_user)
      |> assign(:user_vote, user_vote)
-     |> assign(:page_title, post.title)}
+     |> assign(:page_title, post.title)
+     |> assign(:reply_forms, %{})
+     |> assign(:show_reply_form, nil)}
+  end
+
+  def handle_event("validate_main", %{"comment" => comment_params}, socket) do
+    comment_params = Map.put(comment_params, "link_id", socket.assigns.post.id)
+
+    changeset =
+      %Posts.Comment{}
+      |> Posts.change_comment(comment_params)
+      |> Map.put(:action, :validate)
+
+    {:noreply, assign(socket, :form, to_form(changeset))}
   end
 
   def handle_event("validate", %{"comment" => comment_params}, socket) do
@@ -72,6 +85,95 @@ defmodule LinksWeb.CommentsLive do
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, :form, to_form(changeset))}
+    end
+  end
+
+  def handle_event("show_reply_form", %{"comment_id" => comment_id}, socket) do
+    current_user = socket.assigns.current_user
+    
+    if current_user do
+      comment_id = String.to_integer(comment_id)
+      
+      # Close any existing reply forms first
+      reply_forms = Map.delete(socket.assigns.reply_forms, socket.assigns.show_reply_form)
+      
+      # Create changeset for reply
+      initial_attrs = %{
+        "link_id" => socket.assigns.post.id,
+        "parent_id" => comment_id,
+        "author" => current_user.username
+      }
+      
+      changeset = Posts.change_comment(%Posts.Comment{}, initial_attrs)
+      
+      reply_forms = Map.put(reply_forms, comment_id, to_form(changeset))
+      
+      {:noreply,
+       socket
+       |> assign(:reply_forms, reply_forms)
+       |> assign(:show_reply_form, comment_id)}
+    else
+      {:noreply, put_flash(socket, :error, "You must be logged in to reply")}
+    end
+  end
+
+  def handle_event("hide_reply_form", %{"comment_id" => comment_id}, socket) do
+    comment_id = String.to_integer(comment_id)
+    reply_forms = Map.delete(socket.assigns.reply_forms, comment_id)
+    
+    show_reply_form = if socket.assigns.show_reply_form == comment_id, do: nil, else: socket.assigns.show_reply_form
+    
+    {:noreply,
+     socket
+     |> assign(:reply_forms, reply_forms)
+     |> assign(:show_reply_form, show_reply_form)}
+  end
+
+  def handle_event("validate_reply", %{"comment" => comment_params, "comment_id" => comment_id}, socket) do
+    comment_id = String.to_integer(comment_id)
+    
+    comment_params = 
+      comment_params
+      |> Map.put("link_id", socket.assigns.post.id)
+      |> Map.put("parent_id", comment_id)
+      |> Map.put("author", socket.assigns.current_user.username)
+
+    changeset =
+      %Posts.Comment{}
+      |> Posts.change_comment(comment_params)
+      |> Map.put(:action, :validate)
+
+    reply_forms = Map.put(socket.assigns.reply_forms, comment_id, to_form(changeset))
+
+    {:noreply, assign(socket, :reply_forms, reply_forms)}
+  end
+
+  def handle_event("save_reply", %{"comment" => comment_params, "comment_id" => comment_id}, socket) do
+    comment_id = String.to_integer(comment_id)
+    current_user = socket.assigns.current_user
+
+    # Ensure we have the required fields
+    comment_params =
+      comment_params
+      |> Map.put("link_id", socket.assigns.post.id)
+      |> Map.put("parent_id", comment_id)
+      |> Map.put("author", current_user.username)
+
+    case Posts.create_comment(comment_params) do
+      {:ok, _comment} ->
+        # Remove the reply form
+        reply_forms = Map.delete(socket.assigns.reply_forms, comment_id)
+        show_reply_form = if socket.assigns.show_reply_form == comment_id, do: nil, else: socket.assigns.show_reply_form
+
+        {:noreply,
+         socket
+         |> assign(:reply_forms, reply_forms)
+         |> assign(:show_reply_form, show_reply_form)
+         |> put_flash(:info, "Reply posted successfully!")}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        reply_forms = Map.put(socket.assigns.reply_forms, comment_id, to_form(changeset))
+        {:noreply, assign(socket, :reply_forms, reply_forms)}
     end
   end
 
@@ -148,7 +250,9 @@ defmodule LinksWeb.CommentsLive do
     {:noreply,
      socket
      |> assign(:post, post)
-     |> assign(:comments, post.comments)}
+     |> assign(:comments, post.comments)
+     |> assign(:reply_forms, %{})
+     |> assign(:show_reply_form, nil)}
   end
 
   def handle_info({:comment_deleted, _comment}, socket) do
@@ -158,7 +262,9 @@ defmodule LinksWeb.CommentsLive do
     {:noreply,
      socket
      |> assign(:post, post)
-     |> assign(:comments, post.comments)}
+     |> assign(:comments, post.comments)
+     |> assign(:reply_forms, %{})
+     |> assign(:show_reply_form, nil)}
   end
 
   # Private functions

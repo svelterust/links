@@ -101,11 +101,9 @@ defmodule Links.Posts do
 
   """
   def get_post_with_comments!(id) do
-    Repo.get!(Post, id)
-    |> Repo.preload([
-      :user,
-      comments: from(c in Comment, order_by: [desc: c.inserted_at])
-    ])
+    post = Repo.get!(Post, id) |> Repo.preload(:user)
+    comments = list_comments_for_post(id)
+    Map.put(post, :comments, comments)
   end
 
   @doc """
@@ -334,15 +332,36 @@ defmodule Links.Posts do
   # Comments
 
   @doc """
-  Returns the list of comments for a post.
+  Returns the list of comments for a post organized hierarchically.
 
   ## Examples
 
       iex> list_comments_for_post(123)
-      [%Comment{}, ...]
+      [%Comment{replies: [%Comment{}, ...]}, ...]
 
   """
   def list_comments_for_post(post_id) do
+    # Get all comments for the post
+    all_comments = Repo.all(
+      from c in Comment,
+        where: c.link_id == ^post_id,
+        order_by: [asc: c.inserted_at]
+    )
+
+    # Build hierarchical structure
+    build_comment_tree(all_comments)
+  end
+
+  @doc """
+  Returns flat list of comments for a post (original behavior).
+
+  ## Examples
+
+      iex> list_comments_for_post_flat(123)
+      [%Comment{}, ...]
+
+  """
+  def list_comments_for_post_flat(post_id) do
     Repo.all(
       from c in Comment,
         where: c.link_id == ^post_id,
@@ -574,5 +593,51 @@ defmodule Links.Posts do
         |> Post.update_comment_count_changeset(count)
         |> Repo.update()
     end
+  end
+
+  defp build_comment_tree(comments) do
+    # Create a map of all comments for quick lookup
+    comment_map = Enum.into(comments, %{}, fn comment -> {comment.id, Map.put(comment, :replies, [])} end)
+    
+    # Group comments by parent_id to build relationships
+    grouped_by_parent = Enum.group_by(comments, fn comment -> comment.parent_id end)
+    
+    # Build the tree by adding children to their parents
+    updated_comment_map = Enum.reduce(grouped_by_parent, comment_map, fn {parent_id, children}, acc ->
+      if parent_id do
+        # These are child comments, add them to their parent
+        case Map.get(acc, parent_id) do
+          nil -> acc  # Parent doesn't exist, skip
+          parent ->
+            # Sort children by inserted_at to maintain chronological order
+            sorted_children = Enum.sort_by(children, &(&1.inserted_at), DateTime)
+            updated_parent = Map.put(parent, :replies, sorted_children)
+            Map.put(acc, parent_id, updated_parent)
+        end
+      else
+        # These are root comments, no parent to update
+        acc
+      end
+    end)
+    
+    # Recursively build the full tree structure
+    root_comments = Map.get(grouped_by_parent, nil, [])
+    |> Enum.sort_by(&(&1.inserted_at), DateTime)
+    |> Enum.map(fn root_comment ->
+      build_nested_replies(root_comment, updated_comment_map)
+    end)
+    
+    root_comments
+  end
+  
+  defp build_nested_replies(comment, comment_map) do
+    updated_comment = Map.get(comment_map, comment.id, comment)
+    
+    # Recursively build nested replies
+    nested_replies = Enum.map(updated_comment.replies, fn reply ->
+      build_nested_replies(reply, comment_map)
+    end)
+    
+    Map.put(updated_comment, :replies, nested_replies)
   end
 end
