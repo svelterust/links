@@ -725,15 +725,17 @@ defmodule LinksWeb.CoreComponents do
       <% end %>
 
       <!-- Nested Replies -->
-      <%= for reply <- @comment.replies do %>
-        <div class="mt-4">
-          <.comment_thread 
-            comment={reply} 
-            current_user={@current_user}
-            reply_forms={@reply_forms}
-            show_reply_form={@show_reply_form}
-            depth={@depth + 1}
-          />
+      <%= if Map.has_key?(@comment, :replies) && is_list(@comment.replies) && length(@comment.replies) > 0 do %>
+        <div class="mt-6 space-y-6">
+          <%= for reply <- @comment.replies do %>
+            <.comment_thread 
+              comment={reply} 
+              current_user={@current_user}
+              reply_forms={@reply_forms}
+              show_reply_form={@show_reply_form}
+              depth={@depth + 1}
+            />
+          <% end %>
         </div>
       <% end %>
     </article>
